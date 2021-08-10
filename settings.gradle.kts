@@ -1,4 +1,4 @@
-rootProject.name = "myawesomeplugin"
+rootProject.name = "bapp"
 
 include(":api")
 include(":bukkit")

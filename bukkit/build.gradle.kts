@@ -3,15 +3,12 @@ import kr.entree.spigradle.kotlin.papermc
 
 plugins {
     kotlin("jvm")
-    id("com.github.johnrengelman.shadow") version "5.2.0"
+    id("com.github.johnrengelman.shadow")
     id("kr.entree.spigradle")
 }
 
 repositories {
     papermc()
-    maven {
-        url = uri("https://repo.extendedclip.com/content/repositories/placeholderapi/")
-    }
 }
 
 dependencies {
@@ -21,6 +18,12 @@ dependencies {
 
     // server dependencies
     compileOnly(paper())
+
+    implementation("org.jetbrains.exposed", "exposed-core", "0.28.1")
+    implementation("org.jetbrains.exposed", "exposed-jdbc", "0.28.1")
+    implementation("pw.forst", "exposed-upsert", "1.0")
+    implementation("org.postgresql", "postgresql", "42.2.18")
+    implementation("com.zaxxer", "HikariCP", "3.4.5")
 }
 
 spotless {
@@ -40,8 +43,8 @@ tasks {
     }
 
     spigot {
-        name = "myawesomeplugin"
-        authors = mutableListOf("Some soft boy <3")
+        name = "Bapp"
+        authors = mutableListOf("ZachyFoxx")
         apiVersion = "1.16"
         softDepends = mutableListOf()
     }

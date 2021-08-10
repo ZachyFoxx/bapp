@@ -6,9 +6,10 @@ plugins {
     kotlin("jvm") version "1.4.10"
     id("com.diffplug.spotless") version "5.8.2"
     id("kr.entree.spigradle") version "2.2.3"
+    id("com.github.johnrengelman.shadow") version "6.1.0"
 }
 
-group = "com.dumbdogdiner"
+group = "sh.foxboy"
 version = "1.0.0"
 
 allprojects {
@@ -22,8 +23,13 @@ allprojects {
     }
 }
 
+dependencies {
+    implementation(project(":api"))
+    implementation(project(":bukkit"))
+}
+
 subprojects {
-    group = "com.dumbdogdiner.myawesomeplugin"
+    group = "sh.foxboy.bapp"
 
     apply(plugin = "java")
     apply(plugin = "kotlin")
@@ -54,5 +60,15 @@ tasks {
     // Disable root project building spigot description.
     generateSpigotDescription {
         enabled = false
+    }
+    build {
+        dependsOn("shadowJar")
+    }
+
+    shadowJar {
+        archiveClassifier.set("")
+        val pkg = "sh.foxboy.bapp.libs."
+        relocate("com.zaxxer", "${pkg}com.zaxxer")
+        relocate("org.postgresql", "${pkg}org.postgresql")
     }
 }
