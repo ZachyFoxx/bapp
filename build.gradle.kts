@@ -20,6 +20,9 @@ allprojects {
 
         // Add paper repository here, as it's used in both API and Bukkit modules.
         papermc()
+        maven(url = "https://raw.githubusercontent.com/JorelAli/CommandAPI/mvn-repo/")
+        maven(url = "https://repo.codemc.org/repository/maven-public/")
+        maven(url = "https://jitpack.io" )
     }
 }
 
@@ -70,5 +73,6 @@ tasks {
         val pkg = "sh.foxboy.bapp.libs."
         relocate("com.zaxxer", "${pkg}com.zaxxer")
         relocate("org.postgresql", "${pkg}org.postgresql")
+        relocate("dev.jorel", "${pkg}dev.jorel")
     }
 }

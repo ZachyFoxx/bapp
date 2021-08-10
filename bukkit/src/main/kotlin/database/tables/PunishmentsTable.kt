@@ -9,7 +9,7 @@ import sh.foxboy.bapp.Bapp
 import sh.foxboy.bapp.Constants
 
 object PunishmentsTable : Table(Bapp.plugin.config.getString(Constants.SettingsPaths.DATABASE_TABLE_PREFIX) ?: "bapp_") {
-    private val id = integer("id").autoIncrement()
+    val id = integer("id").autoIncrement()
 
     var type = integer("type")
 
@@ -22,6 +22,8 @@ object PunishmentsTable : Table(Bapp.plugin.config.getString(Constants.SettingsP
     var reason = text("reason")
 
     var expiry = long("expiry")
+
+    var appealed = bool("appealed").default(false)
 
     override val primaryKey = PrimaryKey(id)
 }

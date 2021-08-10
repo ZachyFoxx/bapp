@@ -5,6 +5,17 @@
 package sh.foxboy.bapp
 
 object Constants {
+    object Permissions {
+        const val BAN = "bapp.ban"
+        const val MUTE = "bapp.mute"
+        const val KICK = "bapp.kick"
+        const val WARN = "bapp.warn"
+        const val BAN_IMMUNE = "bapp.ban.immune"
+        const val MUTE_IMMUNE = "bapp.mute.immune"
+        const val KICK_IMMUNE = "bapp.kick.immune"
+        const val WARN_IMMUNE = "bapp.warn.immune"
+    }
+
     object SettingsPaths {
         const val DATABASE_HOST = "database.host"
         const val DATABASE_PORT = "database.port"

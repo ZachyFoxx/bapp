@@ -18,7 +18,12 @@ dependencies {
 
     // server dependencies
     compileOnly(paper())
+    implementation("com.github.MilkBowl:VaultAPI:1.7")
 
+    // Command API
+    implementation("dev.jorel.CommandAPI:commandapi-shade:6.3.0")
+
+    // Postgres & Exposed
     implementation("org.jetbrains.exposed", "exposed-core", "0.28.1")
     implementation("org.jetbrains.exposed", "exposed-jdbc", "0.28.1")
     implementation("pw.forst", "exposed-upsert", "1.0")
@@ -47,5 +52,6 @@ tasks {
         authors = mutableListOf("ZachyFoxx")
         apiVersion = "1.16"
         softDepends = mutableListOf()
+        depends = listOf("vault")
     }
 }

@@ -46,5 +46,20 @@
       <option name="name" value="maven6" />
       <option name="url" value="https://repo.extendedclip.com/content/repositories/placeholderapi/" />
     </remote-repository>
+    <remote-repository>
+      <option name="id" value="maven7" />
+      <option name="name" value="maven7" />
+      <option name="url" value="https://raw.githubusercontent.com/JorelAli/CommandAPI/mvn-repo/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="maven8" />
+      <option name="name" value="maven8" />
+      <option name="url" value="https://jitpack.io" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="maven8" />
+      <option name="name" value="maven8" />
+      <option name="url" value="https://repo.codemc.org/repository/maven-public/" />
+    </remote-repository>
   </component>
 </project>

@@ -23,4 +23,6 @@ public interface Punishment {
     public String getReason();
 
     public Date getExpiry();
+
+    public Boolean isAppealed();
 }
