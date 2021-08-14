@@ -12,8 +12,7 @@ import sh.foxboy.bapp.WithPlugin
 import sh.foxboy.bapp.api.punishment.Punishment
 import sh.foxboy.bapp.api.punishment.PunishmentResponse
 import sh.foxboy.bapp.api.punishment.PunishmentType
-import sh.foxboy.bapp.database.PostgresHandler.getLastPunishment
-import sh.foxboy.bapp.database.PostgresHandler.getPunishmentById
+import java.lang.Exception
 
 class Punishment(private val type: PunishmentType, private val arbiter: OfflinePlayer, private val target: OfflinePlayer?, private var reason: String?, private var expiry: Date, private var appealed: Boolean = false) : Punishment,
     WithPlugin {
@@ -22,20 +21,28 @@ class Punishment(private val type: PunishmentType, private val arbiter: OfflineP
     private var tmpreason = reason ?: "You have been punished!"
 
     override fun commit(): PunishmentResponse {
-        if (target == null)
-            return PunishmentResponse.TARGET_NOT_EXIST
+        try {
+            if (target == null)
+                return PunishmentResponse.TARGET_NOT_EXIST
 
-        if (getPunishmentById(id) != null)
-            return PunishmentResponse.PUNISHMENT_ALREADY_PUSHED
+            if (plugin.postgresHandler.getPunishmentById(id) != null)
+                return PunishmentResponse.PUNISHMENT_ALREADY_PUSHED
 
-        if (getLastPunishment(target.uniqueId) != null && getLastPunishment(target.uniqueId)?.isAppealed == false)
-            return PunishmentResponse.TARGET_ALREADY_PUNISHED
+            if (plugin.postgresHandler.getLastPunishment(target.uniqueId) != null && plugin.postgresHandler.getLastPunishment(
+                    target.uniqueId
+                )?.isAppealed == false
+            )
+                return PunishmentResponse.TARGET_ALREADY_PUNISHED
 
-        if (!checkTypePermission(arbiter, target, type))
-            return PunishmentResponse.PERMISSION_DENIED
+//            if (!checkTypePermission(arbiter, target, type))
+//                return PunishmentResponse.PERMISSION_DENIED
 
-        plugin.postgresHandler.insertPunishment(this)
-        return PunishmentResponse.OK
+            plugin.postgresHandler.insertPunishment(this)
+            return PunishmentResponse.OK
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return PunishmentResponse.SERVER_ERROR
+        }
     }
 
     override fun getId(): Int {

@@ -30,7 +30,7 @@ import sh.foxboy.bapp.database.tables.PunishmentsTable.reason
 import sh.foxboy.bapp.database.tables.PunishmentsTable.targetUniqueId
 import sh.foxboy.bapp.database.tables.PunishmentsTable.type
 
-object PostgresHandler : WithPlugin {
+class PostgresHandler() : WithPlugin {
     lateinit var dbConnection: Database
 
     fun init(): Boolean {
@@ -46,7 +46,7 @@ object PostgresHandler : WithPlugin {
                 config.getString(Constants.SettingsPaths.DATABASE_DATABASE)
             }?sslmode=${config.getString(Constants.SettingsPaths.DATABASE_USE_SSL, "disabled")}"
 
-            driverClassName = "com.dumbdogdiner.stickycommands.libs.org.postgresql.Driver"
+            driverClassName = "sh.foxboy.bapp.libs.org.postgresql.Driver"
             username = config.getString(Constants.SettingsPaths.DATABASE_USERNAME, "postgres")!!
             password = config.getString(Constants.SettingsPaths.DATABASE_PASSWORD)!!
             maximumPoolSize = 2
@@ -73,9 +73,10 @@ object PostgresHandler : WithPlugin {
 
     fun getLastId(): Int {
         return transaction(dbConnection) {
-            return@transaction PunishmentsTable.selectAll().limit(1)
+            return@transaction PunishmentsTable.selectAll()
                 .orderBy(PunishmentsTable.id to SortOrder.ASC)
-                .last().getOrNull(PunishmentsTable.id) ?: -1
+                .lastOrNull()
+                ?.getOrNull(PunishmentsTable.id) ?: 1
         }
     }
 

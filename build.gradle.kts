@@ -1,9 +1,7 @@
 import kr.entree.spigradle.kotlin.papermc
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     java
-    kotlin("jvm") version "1.4.10"
     id("com.diffplug.spotless") version "5.8.2"
     id("kr.entree.spigradle") version "2.2.3"
     id("com.github.johnrengelman.shadow") version "6.1.0"
@@ -35,14 +33,13 @@ subprojects {
     group = "sh.foxboy.bapp"
 
     apply(plugin = "java")
-    apply(plugin = "kotlin")
     apply(plugin = "kr.entree.spigradle")
 
     // Spotless configuration
-    apply(plugin =  "com.diffplug.spotless")
-    spotless {
-        ratchetFrom = "origin/master"
-    }
+//    apply(plugin =  "com.diffplug.spotless")
+//    spotless {
+//        ratchetFrom = "origin/master"
+//    }
 
     repositories {
         jcenter()
@@ -50,13 +47,10 @@ subprojects {
     }
 
     tasks.withType<JavaCompile> {
-        targetCompatibility = JavaVersion.VERSION_11.toString()
-        sourceCompatibility = JavaVersion.VERSION_11.toString()
+        targetCompatibility = JavaVersion.VERSION_16.toString()
+        sourceCompatibility = JavaVersion.VERSION_16.toString()
     }
 
-    tasks.withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = JavaVersion.VERSION_11.toString()
-    }
 }
 
 tasks {

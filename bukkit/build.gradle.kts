@@ -2,7 +2,7 @@ import kr.entree.spigradle.kotlin.paper
 import kr.entree.spigradle.kotlin.papermc
 
 plugins {
-    kotlin("jvm")
+    kotlin("jvm") version "1.5.20"
     id("com.github.johnrengelman.shadow")
     id("kr.entree.spigradle")
 }
@@ -22,6 +22,7 @@ dependencies {
 
     // Command API
     implementation("dev.jorel.CommandAPI:commandapi-shade:6.3.0")
+    compileOnly("dev.jorel.CommandAPI:commandapi-core:6.3.0")
 
     // Postgres & Exposed
     implementation("org.jetbrains.exposed", "exposed-core", "0.28.1")
@@ -31,12 +32,12 @@ dependencies {
     implementation("com.zaxxer", "HikariCP", "3.4.5")
 }
 
-spotless {
-    kotlin {
-        ktlint()
-        licenseHeaderFile(rootProject.file("LICENSE_HEADER"))
-    }
-}
+//spotless {
+//    kotlin {
+//        ktlint()
+//        licenseHeaderFile(rootProject.file("LICENSE_HEADER"))
+//    }
+//}
 
 tasks {
     build {
@@ -51,7 +52,8 @@ tasks {
         name = "Bapp"
         authors = mutableListOf("ZachyFoxx")
         apiVersion = "1.16"
-        softDepends = mutableListOf()
-        depends = listOf("vault")
+        softDepends = mutableListOf("Vault", "LuckPerms")
+        depends = listOf("Vault")
+        version = "0.1.0-dev"
     }
 }

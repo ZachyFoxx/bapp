@@ -9,10 +9,11 @@ import dev.jorel.commandapi.CommandAPIConfig
 import kr.entree.spigradle.annotations.PluginMain
 import net.milkbowl.vault.permission.Permission
 import org.bukkit.plugin.Plugin
-import org.bukkit.plugin.RegisteredServiceProvider
 import org.bukkit.plugin.java.JavaPlugin
 import sh.foxboy.bapp.api.BappAPI
 import sh.foxboy.bapp.database.PostgresHandler
+import sh.foxboy.bapp.util.StartupUtil
+import sh.foxboy.bapp.util.StartupUtil.registerCommands
 
 @PluginMain
 class Bapp : JavaPlugin(), BappAPI {
@@ -31,22 +32,24 @@ class Bapp : JavaPlugin(), BappAPI {
     override fun onLoad() {
         plugin = this
         CommandAPI.onLoad(CommandAPIConfig().verboseOutput(true))
+
+        if (!StartupUtil.setupConfig()) return
+
+        postgresHandler = PostgresHandler()
+
+        if (!postgresHandler.init()) return
+        registerCommands()
     }
 
     override fun onEnable() {
         CommandAPI.onEnable(this)
         BappAPI.registerService(this, this)
-        setupPermissions()
-        logger.info("Hello!")
+        permission = server.servicesManager.getRegistration(Permission::class.java)?.provider ?: return
+
+        logger.info("Bapp enabled successfully!")
     }
 
     override fun onDisable() {
         reloadConfig()
-    }
-
-    private fun setupPermissions(): Boolean {
-        val rsp: RegisteredServiceProvider<Permission> = server.servicesManager.getRegistration(Permission::class.java) ?: return false
-        this.permission = rsp.provider
-        return true
     }
 }

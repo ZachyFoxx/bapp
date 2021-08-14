@@ -8,7 +8,7 @@ import org.jetbrains.exposed.sql.Table
 import sh.foxboy.bapp.Bapp
 import sh.foxboy.bapp.Constants
 
-object PunishmentsTable : Table(Bapp.plugin.config.getString(Constants.SettingsPaths.DATABASE_TABLE_PREFIX) ?: "bapp_") {
+object PunishmentsTable : Table(Bapp.plugin.config.getString(Constants.SettingsPaths.DATABASE_TABLE_PREFIX) ?: "bapp_"+"punishments") {
     val id = integer("id").autoIncrement()
 
     var type = integer("type")

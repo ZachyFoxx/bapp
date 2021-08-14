@@ -15,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public interface BappAPI {
     /**
-     * Register the chat service.
+     * Register the plugin service.
      *
      * @param plugin  The plugin registering the service
      * @param service The plugin's implementation of the service
@@ -27,7 +27,7 @@ public interface BappAPI {
     }
 
     /**
-     * Fetch the instantiated chat service object.
+     * Fetch the instantiated plugin service object.
      *
      * @return {@link BappAPI}
      */
