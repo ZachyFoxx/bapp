@@ -34,8 +34,8 @@ class Punishment(private val type: PunishmentType, private val arbiter: OfflineP
             )
                 return PunishmentResponse.TARGET_ALREADY_PUNISHED
 
-//            if (!checkTypePermission(arbiter, target, type))
-//                return PunishmentResponse.PERMISSION_DENIED
+            if (!checkTypePermission(arbiter, target, type))
+                return PunishmentResponse.PERMISSION_DENIED
 
             plugin.postgresHandler.insertPunishment(this)
             return PunishmentResponse.OK

@@ -18,7 +18,7 @@ dependencies {
 
     // server dependencies
     compileOnly(paper())
-    implementation("com.github.MilkBowl:VaultAPI:1.7")
+    compileOnly("com.github.MilkBowl:VaultAPI:1.7")
 
     // Command API
     implementation("dev.jorel.CommandAPI:commandapi-shade:6.3.0")
@@ -52,7 +52,7 @@ tasks {
         name = "Bapp"
         authors = mutableListOf("ZachyFoxx")
         apiVersion = "1.16"
-        softDepends = mutableListOf("Vault", "LuckPerms")
+        softDepends = mutableListOf("LuckPerms")
         depends = listOf("Vault")
         version = "0.1.0-dev"
     }

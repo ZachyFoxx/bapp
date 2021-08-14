@@ -11,6 +11,8 @@ import java.util.Date
 import java.util.UUID
 import org.bukkit.Bukkit
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.Expression
+import org.jetbrains.exposed.sql.Query
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.addLogger
@@ -22,10 +24,12 @@ import sh.foxboy.bapp.Constants
 import sh.foxboy.bapp.WithPlugin
 import sh.foxboy.bapp.api.punishment.Punishment
 import sh.foxboy.bapp.api.punishment.PunishmentType
+import sh.foxboy.bapp.api.punishment.SortBy
 import sh.foxboy.bapp.database.tables.PunishmentsTable
 import sh.foxboy.bapp.database.tables.PunishmentsTable.appealed
 import sh.foxboy.bapp.database.tables.PunishmentsTable.arbiterUniqueId
 import sh.foxboy.bapp.database.tables.PunishmentsTable.expiry
+import sh.foxboy.bapp.database.tables.PunishmentsTable.punishedAt
 import sh.foxboy.bapp.database.tables.PunishmentsTable.reason
 import sh.foxboy.bapp.database.tables.PunishmentsTable.targetUniqueId
 import sh.foxboy.bapp.database.tables.PunishmentsTable.type
@@ -112,6 +116,32 @@ class PostgresHandler() : WithPlugin {
         }
         return punishment
     }
+
+    fun getPunishments(query: Query, sortBy: SortBy, page: Int, pageSize: Int): List<Punishment> {
+        val punishments = mutableListOf<Punishment>()
+        transaction(dbConnection) {
+            query.limit(pageSize, ((page - 1) * pageSize).toLong())
+                .orderBy(orderBy(sortBy))
+                .iterator().forEach {
+                    punishments.add(
+                        sh.foxboy.bapp.punishment.Punishment(
+                            PunishmentType.fromOrdinal(it[type]), Bukkit.getPlayer(it[arbiterUniqueId])!!, Bukkit.getPlayer(it[targetUniqueId]), it[reason], Date.from(Instant.ofEpochMilli(it[expiry]))
+                        )
+                    )
+                }
+        }
+        return punishments.toList()
+    }
+
+    private fun orderBy(sortBy: SortBy): (Pair<Expression<*>, SortOrder>) = when (sortBy) {
+        SortBy.DATE_ASC -> punishedAt to SortOrder.ASC
+        SortBy.DATE_DESC -> punishedAt to SortOrder.DESC
+        SortBy.EXPIRY_ASC -> expiry to SortOrder.ASC
+        SortBy.EXPIRY_DESC -> expiry to SortOrder.DESC
+        SortBy.USERNAME_ASC -> targetUniqueId to SortOrder.ASC
+        SortBy.USERNAME_DESC -> targetUniqueId to SortOrder.ASC
+    }
+
 
     /**************
      * END PUNISHMENT UTILS
