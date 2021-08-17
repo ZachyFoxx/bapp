@@ -15,7 +15,11 @@ object PunishmentsTable : Table(Bapp.plugin.config.getString(Constants.SettingsP
 
     var punishedAt = long("punished_at").clientDefault { System.currentTimeMillis() }
 
-    var arbiterUniqueId = varchar("arbiter_uuid", 36)
+    var arbiterName = varchar("arbiter_name", 16)
+
+    var arbiterUniqueId = varchar("arbiter_uuid", 16)
+
+    var targetName = varchar("target_name", 36)
 
     var targetUniqueId = varchar("target_uuid", 36)
 
