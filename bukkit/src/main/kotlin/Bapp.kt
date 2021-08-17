@@ -33,20 +33,20 @@ class Bapp : JavaPlugin(), BappAPI {
         plugin = this
         CommandAPI.onLoad(CommandAPIConfig().verboseOutput(true))
 
-        if (!StartupUtil.setupConfig()) return
+        if (!StartupUtil.setupConfig()) throw RuntimeException("There was an error setting up the configuration")
 
         postgresHandler = PostgresHandler()
 
-        if (!postgresHandler.init()) return
+        if (!postgresHandler.init()) throw RuntimeException("There was an error setting up the database")
         registerCommands()
     }
 
     override fun onEnable() {
         CommandAPI.onEnable(this)
         BappAPI.registerService(this, this)
-        permission = server.servicesManager.getRegistration(Permission::class.java)?.provider ?: return
+        permission = server.servicesManager.getRegistration(Permission::class.java)?.provider ?: throw RuntimeException("Vault permission registration not found!")
 
-        logger.info("Bapp enabled successfully!")
+        logger.info("$name ${description.version} enabled successfully!")
     }
 
     override fun onDisable() {

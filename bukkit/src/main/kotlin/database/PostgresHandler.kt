@@ -108,7 +108,9 @@ class PostgresHandler() : WithPlugin {
         transaction(dbConnection) {
             PunishmentsTable.insert {
                 it[type] = punishment.type.ordinal
+                it[arbiterName] = punishment.arbiter.name.toString()
                 it[arbiterUniqueId] = punishment.arbiter.uniqueId.toString()
+                it[targetName] = punishment.target!!.name.toString()
                 it[targetUniqueId] = punishment.target!!.uniqueId.toString()
                 it[expiry] = punishment.expiry.time
                 it[reason] = punishment.reason
