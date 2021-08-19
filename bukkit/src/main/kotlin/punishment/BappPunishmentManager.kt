@@ -3,6 +3,8 @@ package sh.foxboy.bapp.punishment
 import org.bukkit.OfflinePlayer
 import org.jetbrains.exposed.sql.selectAll
 import sh.foxboy.bapp.WithPlugin
+import sh.foxboy.bapp.api.entity.Arbiter
+import sh.foxboy.bapp.api.entity.User
 import sh.foxboy.bapp.api.punishment.Punishment
 import sh.foxboy.bapp.api.punishment.PunishmentManager
 import sh.foxboy.bapp.api.punishment.PunishmentType
@@ -10,7 +12,7 @@ import sh.foxboy.bapp.api.punishment.SortBy
 import sh.foxboy.bapp.database.tables.PunishmentsTable
 import java.util.Date
 
-class PunishmentManager : PunishmentManager, WithPlugin {
+class BappPunishmentManager : PunishmentManager, WithPlugin {
     override fun getPunishments(): List<Punishment> {
         return getPunishments(SortBy.DATE_ASC)
     }
@@ -37,12 +39,12 @@ class PunishmentManager : PunishmentManager, WithPlugin {
 
     override fun createPunishment(
         type: PunishmentType,
-        arbiter: OfflinePlayer,
-        target: OfflinePlayer?,
+        arbiter: Arbiter,
+        target: User?,
         reason: String,
         expiry: Date
     ): Punishment {
-        return Punishment(type, arbiter, target, reason, expiry)
+        return BappPunishment(type, arbiter, target, reason, expiry)
     }
 
     override fun deletePunishment(punishment: Punishment): Punishment {

@@ -7,7 +7,7 @@ import java.util.UUID;
 public interface Arbiter {
 
     @NotNull
-    String getUsername();
+    String getName();
 
     @NotNull
     UUID getUniqueId();

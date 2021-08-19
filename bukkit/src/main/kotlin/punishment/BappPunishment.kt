@@ -7,18 +7,24 @@ package sh.foxboy.bapp.punishment
 import java.util.Date
 import org.bukkit.Bukkit
 import org.bukkit.OfflinePlayer
+import sh.foxboy.bapp.Bapp
 import sh.foxboy.bapp.Constants
 import sh.foxboy.bapp.WithPlugin
+import sh.foxboy.bapp.api.entity.Arbiter
+import sh.foxboy.bapp.api.entity.User
 import sh.foxboy.bapp.api.punishment.Punishment
 import sh.foxboy.bapp.api.punishment.PunishmentResponse
 import sh.foxboy.bapp.api.punishment.PunishmentType
 import java.lang.Exception
 
-class Punishment(private val type: PunishmentType, private val arbiter: OfflinePlayer, private val target: OfflinePlayer?, private var reason: String?, private var expiry: Date, private var appealed: Boolean = false) : Punishment,
+class BappPunishment(private val type: PunishmentType, private val arbiter: Arbiter, private val target: User?, private var reason: String?, private var expiry: Date, private var appealed: Boolean = false, private var id: Int = Bapp.plugin.postgresHandler.getLastId()+1) : Punishment,
     WithPlugin {
 
-    private var id = plugin.postgresHandler.getLastId()
     private var tmpreason = reason ?: "You have been punished!"
+
+    override fun getKey(): String {
+        return this.id.toString()
+    }
 
     override fun commit(): PunishmentResponse {
         try {
@@ -34,8 +40,11 @@ class Punishment(private val type: PunishmentType, private val arbiter: OfflineP
             )
                 return PunishmentResponse.TARGET_ALREADY_PUNISHED
 
-            if (!checkTypePermission(arbiter, target, type))
+            if(!plugin.permission.playerHas(Bukkit.getWorlds()[0].name, Bukkit.getOfflinePlayer(arbiter.uniqueId), "${Constants.Permissions.PREFIX}.$type"))
                 return PunishmentResponse.PERMISSION_DENIED
+
+            if(plugin.permission.playerHas(Bukkit.getWorlds()[0].name, Bukkit.getOfflinePlayer(target.uniqueId), "${Constants.Permissions.PREFIX}.$type.immune"))
+                return PunishmentResponse.TARGET_IMMUNE
 
             plugin.postgresHandler.insertPunishment(this)
             return PunishmentResponse.OK
@@ -53,11 +62,11 @@ class Punishment(private val type: PunishmentType, private val arbiter: OfflineP
         return this.type
     }
 
-    override fun getArbiter(): OfflinePlayer {
+    override fun getArbiter(): Arbiter {
         return this.arbiter
     }
 
-    override fun getTarget(): OfflinePlayer? {
+    override fun getTarget(): User? {
         return this.target
     }
 
@@ -71,16 +80,5 @@ class Punishment(private val type: PunishmentType, private val arbiter: OfflineP
 
     override fun isAppealed(): Boolean {
         return this.appealed
-    }
-
-    /**
-     * A crude check to see if the arbiter has the permissions to punish the target
-     */
-    private fun checkTypePermission(arbiter: OfflinePlayer, target: OfflinePlayer, type: PunishmentType) = when (type) {
-        PunishmentType.BAN -> plugin.permission.playerHas(Bukkit.getWorlds()[0].name, arbiter, Constants.Permissions.BAN) && !plugin.permission.playerHas(Bukkit.getWorlds()[0].name, target, Constants.Permissions.BAN_IMMUNE)
-        PunishmentType.MUTE -> plugin.permission.playerHas(Bukkit.getWorlds()[0].name, arbiter, Constants.Permissions.MUTE) && !plugin.permission.playerHas(Bukkit.getWorlds()[0].name, target, Constants.Permissions.MUTE_IMMUNE)
-        PunishmentType.KICK -> plugin.permission.playerHas(Bukkit.getWorlds()[0].name, arbiter, Constants.Permissions.KICK) && !plugin.permission.playerHas(Bukkit.getWorlds()[0].name, target, Constants.Permissions.KICK_IMMUNE)
-        PunishmentType.WARN -> plugin.permission.playerHas(Bukkit.getWorlds()[0].name, arbiter, Constants.Permissions.WARN) && !plugin.permission.playerHas(Bukkit.getWorlds()[0].name, target, Constants.Permissions.WARN_IMMUNE)
-        else -> false
     }
 }

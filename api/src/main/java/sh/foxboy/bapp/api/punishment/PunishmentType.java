@@ -12,17 +12,12 @@ public enum PunishmentType {
     UNKNOWN;
 
     public static PunishmentType fromOrdinal(Integer ordinal) {
-        switch (ordinal) {
-            case 0:
-                return BAN;
-            case 1:
-                return MUTE;
-            case 2:
-                return KICK;
-            case 3:
-                return WARN;
-            default:
-                return UNKNOWN;
-        }
+        return switch (ordinal) {
+            case 0 -> BAN;
+            case 1 -> MUTE;
+            case 2 -> KICK;
+            case 3 -> WARN;
+            default -> UNKNOWN;
+        };
     }
 }

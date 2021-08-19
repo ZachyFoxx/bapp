@@ -1,19 +1,15 @@
 package sh.foxboy.bapp.cache
 
-import sh.foxboy.bapp.api.cache.Cache
-import sun.jvm.hotspot.debugger.Debugger
-
-import java.util.concurrent.FutureTask
-
-import java.util.concurrent.ConcurrentHashMap
-
-import sh.foxboy.bapp.api.cache.Cacheable
-import java.util.concurrent.Callable
-import java.util.function.BiConsumer
 import org.jetbrains.annotations.NotNull
+import sh.foxboy.bapp.api.cache.Cache
+import sh.foxboy.bapp.api.cache.Cacheable
+import sh.foxboy.bapp.api.entity.User
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.FutureTask
+import kotlin.reflect.KClass
 
 
-class BappCache<T : Cacheable?>(private val clazz: Class<T>) : Cache<T : Cacheable> {
+class BappCache<T : Cacheable>(private val clazz: KClass<T>) : Cache<T> {
     interface Predicate<T : Cacheable?> {
         /**
          * Matching function that should evaluate to true if a given object matches any
@@ -28,29 +24,27 @@ class BappCache<T : Cacheable?>(private val clazz: Class<T>) : Cache<T : Cacheab
     private val objects = ConcurrentHashMap<String?, T>()
     private val objectInsertionTimestamps = ConcurrentHashMap<String, Long>()
 
-    val ttl = (30 * 60e3).toLong()
-    val maxSize = 0
+    var ttl = (30 * 60e3).toLong()
+    var maxSize = 0
 
-    val objectExpiryTask: FutureTask<*> = FutureTask<Void>(object : Callable<Boolean?> {
-        override fun call(): Boolean {
-            if (ttl <= 0) {
-                return false
-            }
-            objectInsertionTimestamps.forEach({ k: String, v: Long ->
-                if (v + ttl < System.currentTimeMillis()) {
-                    removeKey(k)
-                }
-            })
-            return true
+    private fun objectExpiryTask() {
+        if (ttl <= 0) {
+            return
         }
-    })
+        objectInsertionTimestamps.forEach { (k: String, v: Long) ->
+            if (v + ttl < System.currentTimeMillis()) {
+                removeKey(k)
+            }
+        }
+        return
+    }
 
     /**
      * Return the size of this cache.
      *
      * @return The size of this cache.
      */
-    fun size(): Int {
+    override fun size(): Int {
         return objects.size
     }
 
@@ -60,9 +54,8 @@ class BappCache<T : Cacheable?>(private val clazz: Class<T>) : Cache<T : Cacheab
      * @param key The key of the object
      * @return The requested object, if it exists
      */
-    operator fun get(@NotNull key: String): T? {
-        val `object` = objects[key]
-        return `object`
+    override fun get(key: String): T? {
+        return objects[key]
     }
 
     /**
@@ -70,8 +63,7 @@ class BappCache<T : Cacheable?>(private val clazz: Class<T>) : Cache<T : Cacheab
      *
      * @return All values in the cache
      */
-    val all: Collection<T>
-    get() = objects.values
+    override fun getAll() = objects.values
 
     /**
      * Find an object using the given tester lambda.
@@ -80,7 +72,7 @@ class BappCache<T : Cacheable?>(private val clazz: Class<T>) : Cache<T : Cacheab
      * looking for
      * @return The first object that evaluates the tester to true, if there is one
      */
-    fun find(@NotNull tester: Predicate<T>): T? {
+    fun find(tester: Predicate<T>): T? {
         for (`object`: T in objects.values) {
             if (tester.match(`object`)) {
                 return `object`
@@ -94,8 +86,8 @@ class BappCache<T : Cacheable?>(private val clazz: Class<T>) : Cache<T : Cacheab
      *
      * @param object The object to store
      */
-    fun put(@NotNull `object`: T) {
-        if (objects.containsKey(`object`.getKey())) {
+    override fun put(`object`: T) {
+        if (objects.containsKey(`object`.key)) {
             return
         }
         if (maxSize > 0) {
@@ -103,8 +95,9 @@ class BappCache<T : Cacheable?>(private val clazz: Class<T>) : Cache<T : Cacheab
                 removeOldestEntry()
             }
         }
-        objects[`object`.getKey()] = `object`
-        objectInsertionTimestamps[`object`.getKey()] = System.currentTimeMillis()
+        objects[`object`.key] = `object`
+        objectInsertionTimestamps[`object`.key] = System.currentTimeMillis()
+        objectExpiryTask()
     }
 
     /**
@@ -112,11 +105,12 @@ class BappCache<T : Cacheable?>(private val clazz: Class<T>) : Cache<T : Cacheab
      *
      * @param object The object to update
      */
-    fun update(@NotNull1 `object`: T) {
-        if (objects.containsKey(`object`.getKey())) {
+    override fun update(`object`: T) {
+        if (objects.containsKey(`object`.key)) {
             remove(`object`)
         }
         put(`object`)
+        objectExpiryTask()
     }
 
     /**
@@ -125,31 +119,21 @@ class BappCache<T : Cacheable?>(private val clazz: Class<T>) : Cache<T : Cacheab
      * @param object The object to remove
      * @return The removed object, if it exists
      */
-    fun remove(@NotNull1 `object`: T?): T? {
-        debug.reset()
-        val didRemove = objects.remove(`object`.getKey())
-        if (didRemove == null) {
-            debug.print(
-                "Could not remove entry for " + clazz.simpleName + " with key " + `object`.getKey()
-                        + " - does not exist"
-            )
-            return null
-        }
+    override fun remove(`object`: T): T? {
+        val didRemove = objects.remove(`object`.key) ?: return null
 
-        // if (maxMemoryUsage > 0) {
-        // memoryUsage -= MemoryUtil.getSizeOf(object);
-        // }
+        objectExpiryTask()
         return didRemove
     }
 
     /**
-     * Remove an oibject from the cache using its key.
+     * Remove an object from the cache using its key.
      *
      * @param key The key to remove
      * @return The removed object, if it exists
      */
-    fun removeKey(@NotNull1 key: String?): T? {
-        val `object` = objects.get(key) ?: return null
+    override fun removeKey(key: String): T? {
+        val `object` = objects[key] ?: return null
         return remove(`object`)
     }
 
@@ -158,8 +142,7 @@ class BappCache<T : Cacheable?>(private val clazz: Class<T>) : Cache<T : Cacheab
      *
      * @return The oldest entry in the cache, if it exists
      */
-    val oldestEntry: T?
-    get() {
+    override fun getOldestEntry(): T? {
         var oldest: String? = null
         var oldestTimestamp: Long? = Long.MAX_VALUE
         for (k: String in objectInsertionTimestamps.keys) {
@@ -177,7 +160,17 @@ class BappCache<T : Cacheable?>(private val clazz: Class<T>) : Cache<T : Cacheab
      *
      * @return The oldest entry in the cache, if it exists
      */
-    fun removeOldestEntry(): T? {
-        return remove(oldestEntry)
+    override fun removeOldestEntry(): T? {
+        return oldestEntry?.let { remove(it) }
     }
+
+    override fun find(tester: Cache.Predicate<T>): T? {
+        for (`object` in objects.values) {
+            if (tester.match(`object`)) {
+                return `object`
+            }
+        }
+        return null
+    }
+
 }

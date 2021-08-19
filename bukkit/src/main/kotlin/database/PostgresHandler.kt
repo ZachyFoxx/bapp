@@ -27,12 +27,17 @@ import sh.foxboy.bapp.api.punishment.PunishmentType
 import sh.foxboy.bapp.api.punishment.SortBy
 import sh.foxboy.bapp.database.tables.PunishmentsTable
 import sh.foxboy.bapp.database.tables.PunishmentsTable.appealed
+import sh.foxboy.bapp.database.tables.PunishmentsTable.arbiterName
 import sh.foxboy.bapp.database.tables.PunishmentsTable.arbiterUniqueId
 import sh.foxboy.bapp.database.tables.PunishmentsTable.expiry
+import sh.foxboy.bapp.database.tables.PunishmentsTable.punishId
 import sh.foxboy.bapp.database.tables.PunishmentsTable.punishedAt
 import sh.foxboy.bapp.database.tables.PunishmentsTable.reason
+import sh.foxboy.bapp.database.tables.PunishmentsTable.targetName
 import sh.foxboy.bapp.database.tables.PunishmentsTable.targetUniqueId
 import sh.foxboy.bapp.database.tables.PunishmentsTable.type
+import sh.foxboy.bapp.entity.BappArbiter
+import sh.foxboy.bapp.entity.BappUser
 
 class PostgresHandler() : WithPlugin {
     lateinit var dbConnection: Database
@@ -64,7 +69,7 @@ class PostgresHandler() : WithPlugin {
                 addLogger(ExposedLogger())
                 SchemaUtils.createMissingTablesAndColumns(PunishmentsTable)
             } catch (e: Exception) {
-                logger.warning("[SQL] Failed to connect to SQL database - invalid connection info/database not up")
+                logger.warning("[SQL] Failed to connect to SQL database - invalid connection info/database not up (${e.cause})")
                 success = false
             }
         }
@@ -78,18 +83,18 @@ class PostgresHandler() : WithPlugin {
     fun getLastId(): Int {
         return transaction(dbConnection) {
             return@transaction PunishmentsTable.selectAll()
-                .orderBy(PunishmentsTable.id to SortOrder.ASC)
+                .orderBy(punishId to SortOrder.ASC)
                 .lastOrNull()
-                ?.getOrNull(PunishmentsTable.id) ?: 1
+                ?.getOrNull(punishId) ?: 1
         }
     }
 
     fun getPunishmentById(id: Int): Punishment? {
         return transaction(dbConnection) {
-            PunishmentsTable.select { (PunishmentsTable.id eq id) }
+            PunishmentsTable.select { (punishId eq id) }
                 .firstOrNull().let {
                     if (it == null) return@transaction null
-                    return@transaction sh.foxboy.bapp.punishment.Punishment(PunishmentType.fromOrdinal(it[type]), Bukkit.getPlayer(it[arbiterUniqueId])!!, Bukkit.getPlayer(it[targetUniqueId]), it[reason], Date.from(Instant.ofEpochMilli(it[expiry])), it[appealed])
+                    return@transaction sh.foxboy.bapp.punishment.BappPunishment(PunishmentType.fromOrdinal(it[type]), BappArbiter(it[arbiterName], UUID.fromString(it[arbiterUniqueId])), BappUser(it[targetName], UUID.fromString(it[targetUniqueId])), it[reason], Date.from(Instant.ofEpochMilli(it[expiry])), it[appealed], it[punishId])
                 }
         }
     }
@@ -99,7 +104,7 @@ class PostgresHandler() : WithPlugin {
             PunishmentsTable.select { (targetUniqueId eq target.toString()) }
                 .firstOrNull().let {
                     if (it == null) return@transaction null
-                    return@transaction sh.foxboy.bapp.punishment.Punishment(PunishmentType.fromOrdinal(it[type]), Bukkit.getPlayer(it[arbiterUniqueId])!!, Bukkit.getPlayer(it[targetUniqueId]), it[reason], Date.from(Instant.ofEpochMilli(it[expiry])), it[appealed])
+                    return@transaction sh.foxboy.bapp.punishment.BappPunishment(PunishmentType.fromOrdinal(it[type]), BappArbiter(it[arbiterName], UUID.fromString(it[arbiterUniqueId])), BappUser(it[targetName], UUID.fromString(it[targetUniqueId])), it[reason], Date.from(Instant.ofEpochMilli(it[expiry])), it[appealed], it[punishId])
                 }
         }
     }
@@ -108,9 +113,9 @@ class PostgresHandler() : WithPlugin {
         transaction(dbConnection) {
             PunishmentsTable.insert {
                 it[type] = punishment.type.ordinal
-                it[arbiterName] = punishment.arbiter.name.toString()
+                it[arbiterName] = punishment.arbiter.name
                 it[arbiterUniqueId] = punishment.arbiter.uniqueId.toString()
-                it[targetName] = punishment.target!!.name.toString()
+                it[targetName] = punishment.target!!.name
                 it[targetUniqueId] = punishment.target!!.uniqueId.toString()
                 it[expiry] = punishment.expiry.time
                 it[reason] = punishment.reason
@@ -126,8 +131,8 @@ class PostgresHandler() : WithPlugin {
                 .orderBy(orderBy(sortBy))
                 .iterator().forEach {
                     punishments.add(
-                        sh.foxboy.bapp.punishment.Punishment(
-                            PunishmentType.fromOrdinal(it[type]), Bukkit.getPlayer(it[arbiterUniqueId])!!, Bukkit.getPlayer(it[targetUniqueId]), it[reason], Date.from(Instant.ofEpochMilli(it[expiry]))
+                        sh.foxboy.bapp.punishment.BappPunishment(
+                            PunishmentType.fromOrdinal(it[type]), BappArbiter(it[arbiterName], UUID.fromString(it[arbiterUniqueId])), BappUser(it[targetName], UUID.fromString(it[targetUniqueId])), it[reason], Date.from(Instant.ofEpochMilli(it[expiry])), it[appealed], it[punishId]
                         )
                     )
                 }

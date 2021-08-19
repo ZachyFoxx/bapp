@@ -7,18 +7,21 @@ package sh.foxboy.bapp.api.punishment;
 import java.util.Date;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.Nullable;
+import sh.foxboy.bapp.api.cache.Cacheable;
+import sh.foxboy.bapp.api.entity.Arbiter;
+import sh.foxboy.bapp.api.entity.User;
 
-public interface Punishment {
+public interface Punishment extends Cacheable {
     public PunishmentResponse commit();
 
     public Integer getId();
 
     public PunishmentType getType();
 
-    public OfflinePlayer getArbiter();
+    public Arbiter getArbiter();
 
     @Nullable
-    public OfflinePlayer getTarget();
+    public User getTarget();
 
     public String getReason();
 

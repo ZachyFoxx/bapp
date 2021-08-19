@@ -14,7 +14,6 @@ public interface Cache<T extends Cacheable> {
          * @param object The object being tested
          * @return True if this object matches the necessary criteria.
          */
-        @NotNull
         boolean match(T object);
     }
 
@@ -23,7 +22,6 @@ public interface Cache<T extends Cacheable> {
      *
      * @return The size of this cache.
      */
-    @NotNull
     public int size();
 
 
@@ -77,7 +75,7 @@ public interface Cache<T extends Cacheable> {
     @Nullable
     public T remove(@NotNull T object);
     /**
-     * Remove an oibject from the cache using its key.
+     * Remove an object from the cache using its key.
      *
      * @param key The key to remove
      * @return The removed object, if it exists

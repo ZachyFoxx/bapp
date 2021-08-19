@@ -6,14 +6,15 @@ package sh.foxboy.bapp
 
 object Constants {
     object Permissions {
-        const val BAN = "bapp.ban"
-        const val MUTE = "bapp.mute"
-        const val KICK = "bapp.kick"
-        const val WARN = "bapp.warn"
-        const val BAN_IMMUNE = "bapp.ban.immune"
-        const val MUTE_IMMUNE = "bapp.mute.immune"
-        const val KICK_IMMUNE = "bapp.kick.immune"
-        const val WARN_IMMUNE = "bapp.warn.immune"
+        const val PREFIX = "bapp"
+        const val BAN = "$PREFIX.ban"
+        const val MUTE = "$PREFIX.mute"
+        const val KICK = "$PREFIX.kick"
+        const val WARN = "$PREFIX.warn"
+        const val BAN_IMMUNE = "$PREFIX.ban.immune"
+        const val MUTE_IMMUNE = "$PREFIX.mute.immune"
+        const val KICK_IMMUNE = "$PREFIX.kick.immune"
+        const val WARN_IMMUNE = "$PREFIX.warn.immune"
     }
 
     object SettingsPaths {

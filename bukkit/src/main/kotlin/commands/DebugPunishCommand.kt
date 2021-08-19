@@ -13,7 +13,9 @@ import java.util.Date
 import org.bukkit.entity.Player
 import sh.foxboy.bapp.api.punishment.PunishmentType
 import sh.foxboy.bapp.commands.arguments.PunishmentTypeArgument.punishmentTypeArgument
-import sh.foxboy.bapp.punishment.Punishment
+import sh.foxboy.bapp.entity.BappArbiter
+import sh.foxboy.bapp.entity.BappUser
+import sh.foxboy.bapp.punishment.BappPunishment
 
 val debugPunishCommand = CommandAPICommand("punish").withPermission("bapp.punish")
     .withArguments(punishmentTypeArgument("type"))
@@ -24,7 +26,7 @@ val debugPunishCommand = CommandAPICommand("punish").withPermission("bapp.punish
         val target = args[1] as Player
         val reason = args[2] as String
 
-        val punishment = Punishment(type, player, target, reason, Date.from(Instant.now()))
+        val punishment = BappPunishment(type, BappArbiter(player.name, player.uniqueId), BappUser(target.name, target.uniqueId), reason, Date.from(Instant.now()))
 
         val response = punishment.commit()
         player.sendMessage("Punishment responded with $response")

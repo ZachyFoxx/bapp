@@ -1,15 +1,16 @@
 package entity;
 
 import org.jetbrains.annotations.NotNull;
+import sh.foxboy.bapp.api.cache.Cacheable;
 
 import java.util.UUID;
 
-public interface User {
+public interface User extends Arbiter, Punishable, Cacheable {
 
 	@NotNull
-	public String getName();
+	String getName();
 
 	@NotNull
-	public UUID getUniqueId();
+	UUID getUniqueId();
 
 }
