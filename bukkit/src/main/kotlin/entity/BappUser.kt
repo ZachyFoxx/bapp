@@ -1,13 +1,9 @@
 package sh.foxboy.bapp.entity
 
-import entity.User
-import org.jetbrains.annotations.NotNull
 import sh.foxboy.bapp.api.punishment.Punishment
 import sh.foxboy.bapp.api.punishment.PunishmentResponse
-import sh.foxboy.bapp.api.punishment.PunishmentType
 import java.util.Date
 import java.util.UUID
-import sh.foxboy.bapp.punishment.BappPunishment
 
 class BappUser(private val name: String, private val  uniqueId: UUID) : sh.foxboy.bapp.api.entity.User {
     override fun getName(): String {

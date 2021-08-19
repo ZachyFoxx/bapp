@@ -1,3 +1,3 @@
-# plugin-base
+# Bapp
 
-Generic plugin base using a Java API, and a Kotlin implementation.
+A Minecraft punishment framework for PaperMC
