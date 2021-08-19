@@ -1,12 +1,11 @@
 package sh.foxboy.bapp.punishment
 
-import org.bukkit.OfflinePlayer
 import org.jetbrains.exposed.sql.selectAll
 import sh.foxboy.bapp.WithPlugin
 import sh.foxboy.bapp.api.entity.Arbiter
 import sh.foxboy.bapp.api.entity.User
 import sh.foxboy.bapp.api.punishment.Punishment
-import sh.foxboy.bapp.api.punishment.PunishmentManager
+import sh.foxboy.bapp.api.managers.PunishmentManager
 import sh.foxboy.bapp.api.punishment.PunishmentType
 import sh.foxboy.bapp.api.punishment.SortBy
 import sh.foxboy.bapp.database.tables.PunishmentsTable

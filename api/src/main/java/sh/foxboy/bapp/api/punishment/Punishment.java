@@ -5,27 +5,35 @@
 package sh.foxboy.bapp.api.punishment;
 
 import java.util.Date;
-import org.bukkit.OfflinePlayer;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import sh.foxboy.bapp.api.cache.Cacheable;
 import sh.foxboy.bapp.api.entity.Arbiter;
 import sh.foxboy.bapp.api.entity.User;
 
 public interface Punishment extends Cacheable {
-    public PunishmentResponse commit();
 
-    public Integer getId();
+    @NotNull
+    PunishmentResponse commit();
 
-    public PunishmentType getType();
+    @NotNull
+    Integer getId();
 
-    public Arbiter getArbiter();
+    @NotNull
+    PunishmentType getType();
+
+    @NotNull
+    Arbiter getArbiter();
 
     @Nullable
-    public User getTarget();
+    User getTarget();
 
-    public String getReason();
+    @NotNull
+    String getReason();
 
-    public Date getExpiry();
+    @NotNull
+    Date getExpiry();
 
-    public Boolean isAppealed();
+    @NotNull
+    Boolean isAppealed();
 }

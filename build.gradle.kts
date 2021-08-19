@@ -68,5 +68,8 @@ tasks {
         relocate("com.zaxxer", "${pkg}com.zaxxer")
         relocate("org.postgresql", "${pkg}org.postgresql")
         relocate("dev.jorel", "${pkg}dev.jorel")
+        relocate("org.jetbrains.exposed", "${pkg}org.jetbrains.exposed")
+        relocate("org.postgresql", "${pkg}org.postgresql")
+        relocate("pw.forst", "${pkg}pw.forst")
     }
 }

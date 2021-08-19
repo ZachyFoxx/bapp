@@ -4,6 +4,8 @@
  */
 package sh.foxboy.bapp.api.punishment;
 
+import org.jetbrains.annotations.NotNull;
+
 public enum PunishmentType {
     BAN,
     MUTE,
@@ -11,7 +13,8 @@ public enum PunishmentType {
     WARN,
     UNKNOWN;
 
-    public static PunishmentType fromOrdinal(Integer ordinal) {
+    @NotNull
+    public static PunishmentType fromOrdinal(@NotNull Integer ordinal) {
         return switch (ordinal) {
             case 0 -> BAN;
             case 1 -> MUTE;

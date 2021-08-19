@@ -5,7 +5,7 @@ import sh.foxboy.bapp.api.cache.Cacheable;
 
 import java.util.UUID;
 
-public interface User extends Punishable, Cacheable {
+public interface User extends Punishable, Cacheable, Arbiter {
 
 	@NotNull
 	String getName();

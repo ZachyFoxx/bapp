@@ -4,11 +4,15 @@
  */
 package sh.foxboy.bapp.api;
 
+import sh.foxboy.bapp.api.cache.Cache;
+import sh.foxboy.bapp.api.entity.User;
+import sh.foxboy.bapp.api.managers.PunishmentManager;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import sh.foxboy.bapp.api.punishment.Punishment;
 
 /**
  * Represents a generic implementation of your plugin.
@@ -49,5 +53,27 @@ public interface BappAPI {
      *
      * @return {@link Plugin}
      */
+    @NotNull
     Plugin getProvider();
+
+    /**
+     * Returns a PunishmentManager which can be used to create and manage punishments
+     * @return {@link PunishmentManager}
+     */
+    @NotNull
+    PunishmentManager getPunishmentManager();
+
+    /**
+     * Returns a cache of users
+     * @return {@link Cache<User>}
+     */
+    @NotNull
+    Cache<User> getUserCache();
+
+    /**
+     * Returns a cache of punishments
+     * @return {@link Cache<Punishment>}
+     */
+    @NotNull
+    Cache<Punishment> getPunishmentCache();
 }
