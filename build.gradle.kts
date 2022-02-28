@@ -34,12 +34,13 @@ subprojects {
 
     apply(plugin = "java")
     apply(plugin = "kr.entree.spigradle")
+    apply(plugin = "com.diffplug.spotless")
 
     // Spotless configuration
-//    apply(plugin =  "com.diffplug.spotless")
-//    spotless {
-//        ratchetFrom = "origin/master"
-//    }
+    apply(plugin =  "com.diffplug.spotless")
+    spotless {
+        ratchetFrom = "origin/master"
+    }
 
     repositories {
         jcenter()

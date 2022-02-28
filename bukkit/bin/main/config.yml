@@ -1,0 +1,23 @@
+cache:
+  user:
+    # Defalt: 24 hours
+    ttl: 86400
+    # Default: 1000
+    entry-count: 1000
+  punishment:
+    # Default: 48 hours
+    ttl: 43200
+    # Default 500
+    entry-count: 500
+
+database:
+  host: localhost
+  port: 5432
+  database: dbname
+  username: root
+  password: root
+  table-prefix: bapp_
+  # Maximum number of times postgres will try to reconnect before giving up.
+  max-reconnects: 5
+  # Use SSL?
+  use-ssl: disabled

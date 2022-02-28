@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Zachery Elliot <notzachery@gmail.com>. All rights reserved.
+ * Copyright (c) 2021 Zachery Elliot <zachery@foxboy.sh>. All rights reserved.
  * Licensed under the MIT license, see LICENSE for more information.
  */
 package sh.foxboy.bapp.database
@@ -9,6 +9,7 @@ import com.zaxxer.hikari.HikariDataSource
 import java.time.Instant
 import java.util.Date
 import java.util.UUID
+import org.bukkit.Bukkit
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.Expression
 import org.jetbrains.exposed.sql.Query
@@ -142,6 +143,7 @@ class PostgresHandler() : WithPlugin {
         return punishments.toList()
     }
 
+
     fun getPunishments(sortBy: SortBy, page: Int, pageSize: Int, user: User): List<Punishment> {
         val punishments = mutableListOf<Punishment>()
         transaction(dbConnection) {
@@ -183,6 +185,7 @@ class PostgresHandler() : WithPlugin {
         SortBy.USERNAME_ASC -> targetUniqueId to SortOrder.ASC
         SortBy.USERNAME_DESC -> targetUniqueId to SortOrder.ASC
     }
+
 
     /**************
      * END PUNISHMENT UTILS

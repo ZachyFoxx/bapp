@@ -1,21 +1,17 @@
-/*
- * Copyright (c) 2022 Zachery Elliot <notzachery@gmail.com>. All rights reserved.
- * Licensed under the MIT license, see LICENSE for more information.
- */
 package sh.foxboy.bapp.punishment
 
-import java.util.Date
-import java.util.UUID
 import org.jetbrains.exposed.sql.selectAll
 import sh.foxboy.bapp.WithPlugin
 import sh.foxboy.bapp.api.entity.Arbiter
 import sh.foxboy.bapp.api.entity.User
-import sh.foxboy.bapp.api.managers.PunishmentManager
 import sh.foxboy.bapp.api.punishment.Punishment
+import sh.foxboy.bapp.api.managers.PunishmentManager
 import sh.foxboy.bapp.api.punishment.PunishmentType
 import sh.foxboy.bapp.api.punishment.SortBy
 import sh.foxboy.bapp.database.tables.PunishmentsTable
 import sh.foxboy.bapp.entity.BappArbiter
+import java.util.UUID
+import java.util.Date
 
 class BappPunishmentManager : PunishmentManager, WithPlugin {
     val consoleArbiter = BappArbiter("CONSOLE", UUID(0, 0))

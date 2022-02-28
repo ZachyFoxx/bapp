@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2022 Zachery Elliot <notzachery@gmail.com>. All rights reserved.
+ * Copyright (c) 2020-2021 Zachery Elliot <zachery@foxboy.sh>. All rights reserved.
  * Licensed under the MIT license, see LICENSE for more information.
  */
 package sh.foxboy.bapp
@@ -22,7 +22,7 @@ import sh.foxboy.bapp.util.StartupUtil
 import sh.foxboy.bapp.util.StartupUtil.registerCommands
 
 @PluginMain
-class Bapp : JavaPlugin(), BappAPI {
+class  Bapp : JavaPlugin(), BappAPI {
 
     companion object {
         lateinit var plugin: Bapp

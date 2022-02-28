@@ -5,6 +5,7 @@ plugins {
     kotlin("jvm") version "1.5.20"
     id("com.github.johnrengelman.shadow")
     id("kr.entree.spigradle")
+    id("com.diffplug.spotless")
 }
 
 repositories {
@@ -32,12 +33,12 @@ dependencies {
     implementation("com.zaxxer", "HikariCP", "3.4.5")
 }
 
-//spotless {
-//    kotlin {
-//        ktlint()
-//        licenseHeaderFile(rootProject.file("LICENSE_HEADER"))
-//    }
-//}
+spotless {
+    kotlin {
+        ktlint()
+        licenseHeaderFile(rootProject.file("LICENSE_HEADER"))
+    }
+}
 
 tasks {
     build {
