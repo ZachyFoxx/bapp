@@ -13,6 +13,7 @@ import org.bukkit.plugin.java.JavaPlugin
 import sh.foxboy.bapp.api.BappAPI
 import sh.foxboy.bapp.api.cache.Cache
 import sh.foxboy.bapp.api.entity.User
+import sh.foxboy.bapp.api.managers.PunishmentManager
 import sh.foxboy.bapp.api.punishment.Punishment
 import sh.foxboy.bapp.cache.BappCache
 import sh.foxboy.bapp.database.PostgresHandler
@@ -20,7 +21,7 @@ import sh.foxboy.bapp.util.StartupUtil
 import sh.foxboy.bapp.util.StartupUtil.registerCommands
 
 @PluginMain
-class Bapp : JavaPlugin(), BappAPI {
+class  Bapp : JavaPlugin(), BappAPI {
 
     companion object {
         lateinit var plugin: Bapp
@@ -29,8 +30,8 @@ class Bapp : JavaPlugin(), BappAPI {
     lateinit var permission: Permission
     lateinit var postgresHandler: PostgresHandler
 
-    lateinit var userCache: Cache<User>
-    lateinit var punishmentCache: Cache<Punishment>
+    private lateinit var userCache: Cache<User>
+    private lateinit var punishmentCache: Cache<Punishment>
 
     override fun getProvider(): Plugin {
         return this
@@ -67,5 +68,17 @@ class Bapp : JavaPlugin(), BappAPI {
 
     override fun onDisable() {
         reloadConfig()
+    }
+
+    override fun getPunishmentManager(): PunishmentManager {
+        return this.punishmentManager
+    }
+
+    override fun getUserCache(): Cache<User> {
+        return this.userCache
+    }
+
+    override fun getPunishmentCache(): Cache<Punishment> {
+        return this.punishmentCache
     }
 }

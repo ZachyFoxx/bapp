@@ -10,25 +10,25 @@ import java.util.List;
 public interface Punishable {
 
 	@NotNull
-	PunishmentResponse ban(@NotNull String reason);
+	PunishmentResponse ban(@NotNull String reason, @NotNull Arbiter arbiter);
 
 	@NotNull
-	PunishmentResponse mute(@NotNull String reason);
+	PunishmentResponse mute(@NotNull String reason, @NotNull Arbiter arbiter);
 
 	@NotNull
-	PunishmentResponse warn(@NotNull String reason);
+	PunishmentResponse warn(@NotNull String reason, @NotNull Arbiter arbiter);
 
 	@NotNull
-	PunishmentResponse kick(@NotNull String reason);
+	PunishmentResponse kick(@NotNull String reason, @NotNull Arbiter arbiter);
 
 	@NotNull
-	PunishmentResponse ban(@NotNull String reason, @NotNull Date expiry);
+	PunishmentResponse ban(@NotNull String reason, @NotNull Arbiter arbiter, @NotNull Date expiry);
 
 	@NotNull
-	PunishmentResponse mute(@NotNull String reason, @NotNull Date expiry);
+	PunishmentResponse mute(@NotNull String reason, @NotNull Arbiter arbiter, @NotNull Date expiry);
 
 	@NotNull
-	PunishmentResponse warn(@NotNull String reason, @NotNull Date expiry);
+	PunishmentResponse warn(@NotNull String reason, @NotNull Arbiter arbiter, @NotNull Date expiry);
 
 	@NotNull
 	List<Punishment> getPunishments();

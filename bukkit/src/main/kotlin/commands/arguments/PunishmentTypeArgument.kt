@@ -21,7 +21,7 @@ object PunishmentTypeArgument {
             val type: PunishmentType?
             // what in the...
             try {
-                type = PunishmentType.valueOf(info.input().toUpperCase())
+                type = PunishmentType.valueOf(info.input().uppercase())
             } catch (e: IllegalArgumentException) {
                 throw CustomArgumentException(MessageBuilder("Unknown punishment type: ").appendArgInput())
             }
