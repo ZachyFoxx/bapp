@@ -41,3 +41,5 @@ gradle-app.setting
 **/debug/
 
 .idea/
+./bukkit/bin
+./api/bin
