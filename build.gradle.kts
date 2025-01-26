@@ -1,10 +1,12 @@
-import kr.entree.spigradle.kotlin.papermc
+import kr.entree.spigradle.data.Load
+import kr.entree.spigradle.kotlin.*
 
 plugins {
     java
+    kotlin("jvm") version "2.0.21"
     id("com.diffplug.spotless") version "5.8.2"
-    id("kr.entree.spigradle") version "2.2.3"
-    id("com.github.johnrengelman.shadow") version "6.1.0"
+    id("kr.entree.spigradle") version "2.4.4"
+    id("com.gradleup.shadow") version "9.0.0-beta4"
 }
 
 group = "sh.foxboy"
@@ -13,14 +15,12 @@ version = "0.1.0-dev"
 allprojects {
     // Declare global repositories
     repositories {
-        jcenter()
-        mavenCentral()
+    mavenCentral()
+    maven { url = uri("https://jitpack.io") }
+    maven { url = uri("https://repo.papermc.io/repository/maven-public/") }
+    maven { url = uri("https://raw.githubusercontent.com/JorelAli/CommandAPI/mvn-repo/") }
+    maven { url = uri("https://repo.codemc.org/repository/maven-public/") }
 
-        // Add paper repository here, as it's used in both API and Bukkit modules.
-        papermc()
-        maven(url = "https://raw.githubusercontent.com/JorelAli/CommandAPI/mvn-repo/")
-        maven(url = "https://repo.codemc.org/repository/maven-public/")
-        maven(url = "https://jitpack.io" )
     }
 }
 
@@ -43,34 +43,30 @@ subprojects {
     }
 
     repositories {
-        jcenter()
         mavenCentral()
     }
 
     tasks.withType<JavaCompile> {
-        targetCompatibility = JavaVersion.VERSION_16.toString()
-        sourceCompatibility = JavaVersion.VERSION_16.toString()
+        targetCompatibility = JavaVersion.VERSION_21.toString()
+        sourceCompatibility = JavaVersion.VERSION_21.toString()
     }
 
 }
 
-tasks {
-    // Disable root project building spigot description.
-    generateSpigotDescription {
-        enabled = false
-    }
-    build {
-        dependsOn("shadowJar")
-    }
+tasks.shadowJar {
+    archiveClassifier.set("")
+    val pkg = "sh.foxboy.bapp.libs."
+    relocate("com.zaxxer", "${pkg}com.zaxxer")
+    relocate("org.postgresql", "${pkg}org.postgresql")
+    relocate("dev.jorel", "${pkg}dev.jorel")
+    relocate("org.jetbrains.exposed", "${pkg}org.jetbrains.exposed")
+    relocate("org.postgresql", "${pkg}org.postgresql")
+    relocate("pw.forst", "${pkg}pw.forst")
+}
+tasks.generateSpigotDescription {
+    enabled = false
+}
 
-    shadowJar {
-        archiveClassifier.set("")
-        val pkg = "sh.foxboy.bapp.libs."
-        relocate("com.zaxxer", "${pkg}com.zaxxer")
-        relocate("org.postgresql", "${pkg}org.postgresql")
-        relocate("dev.jorel", "${pkg}dev.jorel")
-        relocate("org.jetbrains.exposed", "${pkg}org.jetbrains.exposed")
-        relocate("org.postgresql", "${pkg}org.postgresql")
-        relocate("pw.forst", "${pkg}pw.forst")
-    }
+tasks.named("build") {
+    dependsOn("shadowJar")
 }

@@ -1,15 +1,20 @@
-import kr.entree.spigradle.kotlin.paper
-import kr.entree.spigradle.kotlin.papermc
+import kr.entree.spigradle.data.Load
+import kr.entree.spigradle.kotlin.*
 
 plugins {
-    kotlin("jvm") version "1.5.20"
-    id("com.github.johnrengelman.shadow")
+    kotlin("jvm")
+    id("com.diffplug.spotless") version "5.8.2"
     id("kr.entree.spigradle")
-    id("com.diffplug.spotless")
+    id("com.gradleup.shadow")
 }
 
 repositories {
-    papermc()
+    mavenCentral()
+    maven { url = uri("https://jitpack.io") }
+    maven { url = uri("https://repo.papermc.io/repository/maven-public/") }
+    maven { url = uri("https://raw.githubusercontent.com/JorelAli/CommandAPI/mvn-repo/") }
+    maven { url = uri("https://repo.codemc.org/repository/maven-public/") }
+
 }
 
 dependencies {
@@ -26,9 +31,13 @@ dependencies {
     compileOnly("dev.jorel.CommandAPI:commandapi-core:6.3.0")
 
     // Postgres & Exposed
-    implementation("org.jetbrains.exposed", "exposed-core", "0.28.1")
-    implementation("org.jetbrains.exposed", "exposed-jdbc", "0.28.1")
-    implementation("pw.forst", "exposed-upsert", "1.0")
+    implementation("org.jetbrains.exposed:exposed-core:0.58.0")
+    implementation("org.jetbrains.exposed:exposed-jdbc:0.58.0")
+
+    // implementation("org.jetbrains.exposed", "exposed-core", "0.28.1")
+    // implementation("org.jetbrains.exposed", "exposed-jdbc", "0.28.1")
+    implementation("pw.forst", "exposed-upsert", "1.1.0")
+    
     implementation("org.postgresql", "postgresql", "42.2.18")
     implementation("com.zaxxer", "HikariCP", "3.4.5")
 }
@@ -40,21 +49,19 @@ spotless {
     }
 }
 
-tasks {
-    build {
-        dependsOn("shadowJar")
-    }
-
-    shadowJar {
+tasks.shadowJar {
         archiveClassifier.set("")
-    }
+}
 
-    spigot {
-        name = "Bapp"
-        authors = mutableListOf("ZachyFoxx")
-        apiVersion = "1.16"
-        softDepends = mutableListOf("LuckPerms")
-        depends = listOf("Vault")
-        version = "0.1.0-dev"
-    }
+spigot {
+    name = "Bapp"
+    authors = mutableListOf("ZachyFoxx")
+    apiVersion = "1.16"
+    softDepends = mutableListOf("LuckPerms")
+    depends = listOf("Vault")
+    version = "0.1.0-dev"
+}
+
+tasks.named("build") {
+    dependsOn("shadowJar")
 }

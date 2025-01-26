@@ -2,6 +2,8 @@ import kr.entree.spigradle.kotlin.paper
 
 plugins {
     java
+    kotlin("jvm")
+    id("com.diffplug.spotless") version "5.8.2"
     id("kr.entree.spigradle")
 }
 

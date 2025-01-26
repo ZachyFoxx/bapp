@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Zachery Elliot <notzachery@gmail.com>. All rights reserved.
+ * Copyright (c) 2021-2025 Zachery Elliot <notzachery@gmail.com>. All rights reserved.
  * Licensed under the MIT license, see LICENSE for more information.
  */
 package sh.foxboy.bapp.database
@@ -16,7 +16,6 @@ import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import sh.foxboy.bapp.Constants
@@ -92,7 +91,8 @@ class PostgresHandler() : WithPlugin {
 
     fun getPunishmentById(id: Int): Punishment? {
         return transaction(dbConnection) {
-            PunishmentsTable.select { (punishId eq id) }
+            PunishmentsTable.selectAll()
+                .where { (punishId eq id) }
                 .firstOrNull().let {
                     if (it == null) return@transaction null
                     return@transaction sh.foxboy.bapp.punishment.BappPunishment(PunishmentType.fromOrdinal(it[type]), BappArbiter(it[arbiterName], UUID.fromString(it[arbiterUniqueId])), BappUser(it[targetName], UUID.fromString(it[targetUniqueId])), it[reason], Date.from(Instant.ofEpochMilli(it[expiry])), it[appealed], it[punishId])
@@ -102,7 +102,8 @@ class PostgresHandler() : WithPlugin {
 
     fun getLastPunishment(target: UUID): Punishment? {
         return transaction(dbConnection) {
-            PunishmentsTable.select { (targetUniqueId eq target.toString()) }
+            PunishmentsTable.selectAll()
+                .where { (targetUniqueId eq target.toString()) }
                 .firstOrNull().let {
                     if (it == null) return@transaction null
                     return@transaction sh.foxboy.bapp.punishment.BappPunishment(PunishmentType.fromOrdinal(it[type]), BappArbiter(it[arbiterName], UUID.fromString(it[arbiterUniqueId])), BappUser(it[targetName], UUID.fromString(it[targetUniqueId])), it[reason], Date.from(Instant.ofEpochMilli(it[expiry])), it[appealed], it[punishId])
@@ -128,7 +129,8 @@ class PostgresHandler() : WithPlugin {
     fun getPunishments(sortBy: SortBy, page: Int, pageSize: Int, arbiter: Arbiter): List<Punishment> {
         val punishments = mutableListOf<Punishment>()
         transaction(dbConnection) {
-            PunishmentsTable.select { arbiterUniqueId eq arbiter.uniqueId.toString() }
+            PunishmentsTable.selectAll()
+                .where { arbiterUniqueId eq arbiter.uniqueId.toString() }
                 .limit(pageSize, ((page - 1) * pageSize).toLong())
                 .orderBy(orderBy(sortBy))
                 .iterator().forEach {
@@ -145,7 +147,8 @@ class PostgresHandler() : WithPlugin {
     fun getPunishments(sortBy: SortBy, page: Int, pageSize: Int, user: User): List<Punishment> {
         val punishments = mutableListOf<Punishment>()
         transaction(dbConnection) {
-            PunishmentsTable.select { targetUniqueId eq user.uniqueId.toString() }
+            PunishmentsTable.selectAll()
+                .where { targetUniqueId eq user.uniqueId.toString() }
                 .limit(pageSize, ((page - 1) * pageSize).toLong())
                 .orderBy(orderBy(sortBy))
                 .iterator().forEach {
