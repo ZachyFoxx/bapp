@@ -15,6 +15,7 @@ import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.Expression
 import sh.foxboy.bapp.Constants
 import sh.foxboy.bapp.WithPlugin
 import sh.foxboy.bapp.api.entity.User
@@ -197,6 +198,7 @@ class PostgresHandler() : WithPlugin {
 
     fun getPunishments(sortBy: SortBy, page: Int, pageSize: Int, user: User): List<Punishment> {
         val punishments = mutableListOf<Punishment>()
+
         transaction(dbConnection) {
             val query = PunishmentsTable.join(UserTable, JoinType.INNER, onColumn = PunishmentsTable.userId, otherColumn = UserTable.uniqueId) // Join with targetUser
             .join(PunishmentDataTable, JoinType.INNER, onColumn = PunishmentsTable.id, otherColumn = PunishmentDataTable.punishmentTypeId) // Join with punishmentData
@@ -205,7 +207,7 @@ class PostgresHandler() : WithPlugin {
             .selectAll()
             .where { PunishmentsTable.userId eq user.uniqueId }
             .limit(pageSize, ((page - 1) * pageSize).toLong())
-            .sortedBy { sortBy }
+            .orderBy(orderBy(sortBy))
 
             val iterator = query.iterator()
 
@@ -267,7 +269,7 @@ class PostgresHandler() : WithPlugin {
             .join(PunishmentTypeTable, JoinType.INNER, onColumn = PunishmentsTable.punishmentTypeId, otherColumn = PunishmentTypeTable.id) // Join with punishmentType
             .selectAll()
             .limit(pageSize, ((page - 1) * pageSize).toLong())
-            .sortedBy { sortBy }
+            .orderBy(orderBy(sortBy))
 
             val iterator = query.iterator()
 
@@ -302,14 +304,14 @@ class PostgresHandler() : WithPlugin {
         return punishments.toList()
     }
 
-    // private fun orderBy(sortBy: SortBy): (Pair<Expression<*>, SortOrder>) = when (sortBy) {
-    //     SortBy.DATE_ASC -> punishedAt to SortOrder.ASC
-    //     SortBy.DATE_DESC -> punishedAt to SortOrder.DESC
-    //     SortBy.EXPIRY_ASC -> expiry to SortOrder.ASC
-    //     SortBy.EXPIRY_DESC -> expiry to SortOrder.DESC
-    //     SortBy.USERNAME_ASC -> targetUniqueId to SortOrder.ASC
-    //     SortBy.USERNAME_DESC -> targetUniqueId to SortOrder.ASC
-    // }
+    private fun orderBy(sortBy: SortBy): (Pair<Expression<*>, SortOrder>) = when (sortBy) {
+        SortBy.DATE_ASC -> PunishmentDataTable.startTime to SortOrder.ASC
+        SortBy.DATE_DESC -> PunishmentDataTable.startTime to SortOrder.DESC
+        SortBy.EXPIRY_ASC -> PunishmentDataTable.endTime to SortOrder.ASC
+        SortBy.EXPIRY_DESC -> PunishmentDataTable.endTime to SortOrder.DESC
+        SortBy.USERNAME_ASC -> UserTable.username to SortOrder.ASC
+        SortBy.USERNAME_DESC -> UserTable.username to SortOrder.DESC
+    }
 
     /**************
      * END PUNISHMENT UTILS
