@@ -1,10 +1,9 @@
 /*
- * Copyright (c) 2022 Zachery Elliot <notzachery@gmail.com>. All rights reserved.
+ * Copyright (c) 2022-2025 Zachery Elliot <notzachery@gmail.com>. All rights reserved.
  * Licensed under the MIT license, see LICENSE for more information.
  */
 package sh.foxboy.bapp.api.managers;
 
-import java.util.Date;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -52,7 +51,7 @@ public interface PunishmentManager {
         @NotNull Arbiter arbiter,
         @Nullable User target,
         @NotNull String reason,
-        @NotNull Date expiry
+        @Nullable Long expiry
     );
 
     @Nullable

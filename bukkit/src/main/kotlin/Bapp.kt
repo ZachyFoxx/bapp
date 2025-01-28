@@ -6,6 +6,7 @@ package sh.foxboy.bapp
 
 import dev.jorel.commandapi.CommandAPI
 import dev.jorel.commandapi.CommandAPIConfig
+import java.util.UUID
 import kr.entree.spigradle.annotations.PluginMain
 import net.milkbowl.vault.permission.Permission
 import org.bukkit.plugin.Plugin
@@ -83,5 +84,9 @@ class Bapp : JavaPlugin(), BappAPI {
 
     override fun getPunishmentCache(): Cache<Punishment> {
         return this.punishmentCache
+    }
+
+    fun getUniqueId(): UUID {
+        return UUID.fromString(this.getConfig().getString("uuid"))
     }
 }

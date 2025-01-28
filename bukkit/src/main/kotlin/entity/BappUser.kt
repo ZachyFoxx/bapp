@@ -4,8 +4,6 @@
  */
 package sh.foxboy.bapp.entity
 
-import java.time.Instant
-import java.util.Date
 import java.util.UUID
 import sh.foxboy.bapp.Bapp
 import sh.foxboy.bapp.api.entity.Arbiter
@@ -27,31 +25,31 @@ class BappUser(private val name: String, private val uniqueId: UUID) : sh.foxboy
     }
 
     override fun ban(reason: String, arbiter: Arbiter): PunishmentResponse {
-        return manager.createPunishment(PunishmentType.BAN, arbiter, this, reason, Date.from(Instant.MAX)).commit()
+        return manager.createPunishment(PunishmentType.BAN, arbiter, this, reason, Long.MAX_VALUE).commit()
     }
 
-    override fun ban(reason: String, arbiter: Arbiter, expiry: Date): PunishmentResponse {
+    override fun ban(reason: String, arbiter: Arbiter, expiry: Long?): PunishmentResponse {
         return manager.createPunishment(PunishmentType.BAN, arbiter, this, reason, expiry).commit()
     }
 
     override fun mute(reason: String, arbiter: Arbiter): PunishmentResponse {
-        return manager.createPunishment(PunishmentType.MUTE, arbiter, this, reason, Date.from(Instant.MAX)).commit()
+        return manager.createPunishment(PunishmentType.MUTE, arbiter, this, reason, Long.MAX_VALUE).commit()
     }
 
-    override fun mute(reason: String, arbiter: Arbiter, expiry: Date): PunishmentResponse {
+    override fun mute(reason: String, arbiter: Arbiter, expiry: Long?): PunishmentResponse {
         return manager.createPunishment(PunishmentType.MUTE, arbiter, this, reason, expiry).commit()
     }
 
     override fun warn(reason: String, arbiter: Arbiter): PunishmentResponse {
-        return manager.createPunishment(PunishmentType.WARN, arbiter, this, reason, Date.from(Instant.MAX)).commit()
+        return manager.createPunishment(PunishmentType.WARN, arbiter, this, reason, Long.MAX_VALUE).commit()
     }
 
-    override fun warn(reason: String, arbiter: Arbiter, expiry: Date): PunishmentResponse {
+    override fun warn(reason: String, arbiter: Arbiter, expiry: Long?): PunishmentResponse {
         return manager.createPunishment(PunishmentType.WARN, arbiter, this, reason, expiry).commit()
     }
 
     override fun kick(reason: String, arbiter: Arbiter): PunishmentResponse {
-        return manager.createPunishment(PunishmentType.KICK, arbiter, this, reason, Date.from(Instant.MAX)).commit()
+        return manager.createPunishment(PunishmentType.KICK, arbiter, this, reason, Long.MAX_VALUE).commit()
     }
 
     override fun getPunishments(): List<Punishment> {

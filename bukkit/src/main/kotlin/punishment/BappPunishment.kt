@@ -5,7 +5,6 @@
 package sh.foxboy.bapp.punishment
 
 import java.lang.Exception
-import java.util.Date
 import org.bukkit.Bukkit
 import sh.foxboy.bapp.Bapp
 import sh.foxboy.bapp.Constants
@@ -16,7 +15,7 @@ import sh.foxboy.bapp.api.punishment.Punishment
 import sh.foxboy.bapp.api.punishment.PunishmentResponse
 import sh.foxboy.bapp.api.punishment.PunishmentType
 
-class BappPunishment(private val type: PunishmentType, private val arbiter: Arbiter, private val target: User?, private var reason: String?, private var expiry: Date, private var appealed: Boolean = false, private var id: Int = Bapp.plugin.postgresHandler.getLastId() + 1) : Punishment,
+class BappPunishment(private val type: PunishmentType, private val arbiter: Arbiter, private val target: User?, private var reason: String?, private var expiry: Long?, private var appealed: Boolean = false, private var id: Int = Bapp.plugin.postgresHandler.getLastId() + 1) : Punishment,
     WithPlugin {
 
     private var tmpreason = reason ?: "You have been punished!"
@@ -73,7 +72,7 @@ class BappPunishment(private val type: PunishmentType, private val arbiter: Arbi
         return this.tmpreason
     }
 
-    override fun getExpiry(): Date {
+    override fun getExpiry(): Long? {
         return this.expiry
     }
 

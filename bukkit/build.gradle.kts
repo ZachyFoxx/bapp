@@ -45,7 +45,7 @@ dependencies {
 spotless {
     kotlin {
         ktlint()
-        licenseHeaderFile(rootProject.file("LICENSE_HEADER"))
+        // licenseHeaderFile(rootProject.file("LICENSE_HEADER"))
     }
 }
 

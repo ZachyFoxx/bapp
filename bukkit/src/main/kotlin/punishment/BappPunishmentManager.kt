@@ -4,9 +4,7 @@
  */
 package sh.foxboy.bapp.punishment
 
-import java.util.Date
 import java.util.UUID
-import org.jetbrains.exposed.sql.selectAll
 import sh.foxboy.bapp.WithPlugin
 import sh.foxboy.bapp.api.entity.Arbiter
 import sh.foxboy.bapp.api.entity.User
@@ -14,7 +12,6 @@ import sh.foxboy.bapp.api.managers.PunishmentManager
 import sh.foxboy.bapp.api.punishment.Punishment
 import sh.foxboy.bapp.api.punishment.PunishmentType
 import sh.foxboy.bapp.api.punishment.SortBy
-import sh.foxboy.bapp.database.tables.PunishmentsTable
 import sh.foxboy.bapp.entity.BappArbiter
 
 class BappPunishmentManager : PunishmentManager, WithPlugin {
@@ -37,7 +34,7 @@ class BappPunishmentManager : PunishmentManager, WithPlugin {
     }
 
     override fun getPunishments(order: SortBy, page: Int, pageSize: Int): List<Punishment> {
-        return this.plugin.postgresHandler.getPunishments(PunishmentsTable.selectAll(), order, page, pageSize)
+        return this.plugin.postgresHandler.getPunishments(order, page, pageSize)
     }
 
     override fun getPunishments(page: Int): List<Punishment> {
@@ -53,7 +50,7 @@ class BappPunishmentManager : PunishmentManager, WithPlugin {
         arbiter: Arbiter,
         target: User?,
         reason: String,
-        expiry: Date
+        expiry: Long?
     ): Punishment {
         return BappPunishment(type, arbiter, target, reason, expiry)
     }

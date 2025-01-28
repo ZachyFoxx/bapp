@@ -9,25 +9,12 @@ import sh.foxboy.bapp.Bapp
 import sh.foxboy.bapp.Constants
 
 object PunishmentsTable : Table(Bapp.plugin.config.getString(Constants.SettingsPaths.DATABASE_TABLE_PREFIX, "bapp_") + "punishments") {
-    val punishId = integer("id").autoIncrement()
+    val id = integer("id").autoIncrement() // Unique ID for punishment
+    val userId = uuid("user_id") // Foreign key referencing UsersTable
+    val punishmentTypeId = integer("punishment_type_id") // Foreign key referencing PunishmentTypesTable
+    val reason = text("reason") // Reason for the punishment
+    val createdAt = long("created_at").clientDefault { System.currentTimeMillis() } // Timestamp of when the punishment was created
+    val updatedAt = long("updated_at").clientDefault { System.currentTimeMillis() } // Timestamp of when the punishment was last updated
 
-    var type = integer("type")
-
-    var punishedAt = long("punished_at").clientDefault { System.currentTimeMillis() }
-
-    var arbiterName = varchar("arbiter_name", 16)
-
-    var arbiterUniqueId = varchar("arbiter_uuid", 36)
-
-    var targetName = varchar("target_name", 36)
-
-    var targetUniqueId = varchar("target_uuid", 36)
-
-    var reason = text("reason")
-
-    var expiry = long("expiry")
-
-    var appealed = bool("appealed").default(false)
-
-    override val primaryKey = PrimaryKey(punishId)
+    override val primaryKey = PrimaryKey(id)
 }
