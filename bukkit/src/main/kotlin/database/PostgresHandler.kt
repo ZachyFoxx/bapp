@@ -147,30 +147,37 @@ class PostgresHandler() : WithPlugin {
 
     fun getLastPunishment(target: UUID): Punishment? {
         return transaction(dbConnection) {
-            val query = PunishmentsTable
-            .join(UserTable, JoinType.INNER, onColumn = PunishmentsTable.userId, otherColumn = UserTable.uniqueId) // Join with targetUser
-            .join(PunishmentDataTable, JoinType.INNER, onColumn = PunishmentsTable.id, otherColumn = PunishmentDataTable.punishmentTypeId) // Join with punishmentData
-            .join(UserTable, JoinType.INNER, onColumn = PunishmentDataTable.issuedBy, otherColumn = UserTable.uniqueId) // Join with issuedByUser
-            .join(PunishmentTypeTable, JoinType.INNER, onColumn = PunishmentsTable.punishmentTypeId, otherColumn = PunishmentTypeTable.id) // Join with punishmentType
-            .selectAll()
-            .where { PunishmentsTable.userId eq target }
-            .firstOrNull()
+            // Create aliases for the tables using Alias
+            val punishmentAlias = Alias(PunishmentsTable, "punishments")
+            val userAlias = Alias(UserTable, "user")
+            val punishmentDataAlias = Alias(PunishmentDataTable, "punishment_data")
+            val punishmentTypeAlias = Alias(PunishmentTypeTable, "punishment_type")
+            val issuedByUserAlias = Alias(UserTable, "issued_by_user") // Alias for the arbiter
+
+            val query = punishmentAlias
+                .join(userAlias, JoinType.INNER, onColumn = punishmentAlias[PunishmentsTable.userId], otherColumn = userAlias[UserTable.uniqueId]) // Join with targetUser
+                .join(punishmentDataAlias, JoinType.INNER, onColumn = punishmentAlias[PunishmentsTable.id], otherColumn = punishmentDataAlias[PunishmentDataTable.punishmentTypeId]) // Join with punishmentData
+                .join(punishmentTypeAlias, JoinType.INNER, onColumn = punishmentAlias[PunishmentsTable.punishmentTypeId], otherColumn = punishmentTypeAlias[PunishmentTypeTable.id]) // Join with punishmentType
+                .join(issuedByUserAlias, JoinType.INNER, onColumn = punishmentDataAlias[PunishmentDataTable.issuedBy], otherColumn = issuedByUserAlias[UserTable.uniqueId]) // Join with issuedByUser (fixed join condition)
+                .selectAll()
+                .where { PunishmentsTable.userId eq target }
+                .firstOrNull()
 
             // If a row is found, map it to the Punishment object
             query?.let { row ->
                 // Get punishment type
-                val punishmentType = PunishmentType.valueOf(row[PunishmentTypeTable.name])
+                val punishmentType = PunishmentType.fromOrdinal(row[punishmentTypeAlias[PunishmentTypeTable.id]])
 
-                // Map the arbiter details
+                // Map the arbiter details (now using the alias for the arbiter)
                 val arbiter = BappArbiter(
-                    name = row[UserTable.username],
-                    uniqueId = row[PunishmentDataTable.issuedBy]
+                    name = row[issuedByUserAlias[UserTable.username]], // Access arbiter's username by name
+                    uniqueId = row[punishmentDataAlias[PunishmentDataTable.issuedBy]] // Access arbiter's UUID by name
                 )
 
                 // Map the target user details
                 val target2 = BappUser(
-                    name = row[UserTable.username],
-                    uniqueId = row[PunishmentsTable.userId]
+                    name = row[userAlias[UserTable.username]], // Access target user's username by name
+                    uniqueId = row[punishmentAlias[PunishmentsTable.userId]] // Access target user's UUID by name
                 )
 
                 // Return the punishment object
@@ -178,10 +185,10 @@ class PostgresHandler() : WithPlugin {
                     type = punishmentType,
                     arbiter = arbiter,
                     target = target2,
-                    reason = row[PunishmentsTable.reason],
-                    expiry = row[PunishmentDataTable.endTime],
+                    reason = row[punishmentAlias[PunishmentsTable.reason]], // Access reason by name
+                    expiry = row[punishmentDataAlias[PunishmentDataTable.endTime]], // Access expiry by name
                     appealed = false,
-                    id = row[PunishmentsTable.id]
+                    id = row[punishmentAlias[PunishmentsTable.id]] // Access id by name
                 )
             }
         }
@@ -189,13 +196,23 @@ class PostgresHandler() : WithPlugin {
 
     fun insertPunishment(punishment: Punishment): Punishment {
         transaction(dbConnection) {
-            PunishmentsTable.insert {
-                it[userId] = punishment.target!!.uniqueId
-                it[punishmentTypeId] = punishment.type.ordinal
-                it[reason] = punishment.reason
-            }
-            PunishmentDataTable.insert {
-                it[userId] = punishment.target!!.uniqueId
+            val punishmentAlias = Alias(PunishmentsTable, "punishments")
+            val punishmentDataAlias = Alias(PunishmentDataTable, "punishment_data")
+
+            val punishmentId = punishmentAlias.insert {
+                it[punishmentAlias[PunishmentsTable.userId]] = punishment.target!!.uniqueId
+                it[punishmentAlias[PunishmentsTable.punishmentTypeId]] = punishment.type.ordinal
+                it[punishmentAlias[PunishmentsTable.reason]] = punishment.reason
+            }.resultedValues!!.first().get(PunishmentsTable.id)
+
+            punishmentDataAlias.insert {
+                it[punishmentDataAlias[PunishmentDataTable.userId]] = punishment.target!!.uniqueId
+                it[punishmentDataAlias[PunishmentDataTable.punishId]] = punishmentId
+                it[punishmentDataAlias[PunishmentDataTable.punishmentTypeId]] = punishment.type.ordinal
+                it[punishmentDataAlias[PunishmentDataTable.issuedBy]] = punishment.arbiter.uniqueId
+                it[punishmentDataAlias[PunishmentDataTable.startTime]] = System.currentTimeMillis()
+                it[punishmentDataAlias[PunishmentDataTable.endTime]] = punishment.expiry
+                it[punishmentDataAlias[PunishmentDataTable.active]] = true
             }
         }
         return punishment
@@ -229,7 +246,8 @@ class PostgresHandler() : WithPlugin {
             .join(PunishmentTypeTable, JoinType.INNER, onColumn = PunishmentsTable.punishmentTypeId, otherColumn = PunishmentTypeTable.id) // Join with punishmentType
             .selectAll()
             .where { PunishmentsTable.userId eq user.uniqueId }
-            .limit(pageSize, ((page - 1) * pageSize).toLong())
+            .limit(pageSize)
+            .offset(((page - 1) * pageSize).toLong())
             .orderBy(orderBy(sortBy))
 
             val iterator = query.iterator()
@@ -291,7 +309,8 @@ class PostgresHandler() : WithPlugin {
             .join(UserTable, JoinType.INNER, onColumn = PunishmentDataTable.issuedBy, otherColumn = UserTable.uniqueId) // Join with issuedByUser
             .join(PunishmentTypeTable, JoinType.INNER, onColumn = PunishmentsTable.punishmentTypeId, otherColumn = PunishmentTypeTable.id) // Join with punishmentType
             .selectAll()
-            .limit(pageSize, ((page - 1) * pageSize).toLong())
+            .limit(pageSize)
+            .offset(((page - 1) * pageSize).toLong())
             .orderBy(orderBy(sortBy))
 
             val iterator = query.iterator()
