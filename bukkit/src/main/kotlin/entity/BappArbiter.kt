@@ -15,34 +15,35 @@ import sh.foxboy.bapp.api.punishment.SortBy
 
 class BappArbiter(private val name: String, private val uniqueId: UUID) : Arbiter {
 
-    private val manager = Bapp.plugin.getPunishmentManagerExplicit()
+    // why does this overflow???
+    // private val Bapp.plugin.getPunishmentManagerExplicit() = Bapp.plugin.getPunishmentBapp.plugin.getPunishmentManagerExplicit()Explicit()
 
     override fun ban(reason: String, arbiter: Arbiter): PunishmentResponse {
-        return manager.createPunishment(PunishmentType.BAN, arbiter, this, reason, Long.MAX_VALUE).commit()
+        return Bapp.plugin.getPunishmentManagerExplicit().createPunishment(PunishmentType.BAN, arbiter, this, reason, Long.MAX_VALUE).commit()
     }
 
     override fun ban(reason: String, arbiter: Arbiter, expiry: Long?): PunishmentResponse {
-        return manager.createPunishment(PunishmentType.BAN, arbiter, this, reason, expiry).commit()
+        return Bapp.plugin.getPunishmentManagerExplicit().createPunishment(PunishmentType.BAN, arbiter, this, reason, expiry).commit()
     }
 
     override fun mute(reason: String, arbiter: Arbiter): PunishmentResponse {
-        return manager.createPunishment(PunishmentType.MUTE, arbiter, this, reason, Long.MAX_VALUE).commit()
+        return Bapp.plugin.getPunishmentManagerExplicit().createPunishment(PunishmentType.MUTE, arbiter, this, reason, Long.MAX_VALUE).commit()
     }
 
     override fun mute(reason: String, arbiter: Arbiter, expiry: Long?): PunishmentResponse {
-        return manager.createPunishment(PunishmentType.MUTE, arbiter, this, reason, expiry).commit()
+        return Bapp.plugin.getPunishmentManagerExplicit().createPunishment(PunishmentType.MUTE, arbiter, this, reason, expiry).commit()
     }
 
     override fun warn(reason: String, arbiter: Arbiter): PunishmentResponse {
-        return manager.createPunishment(PunishmentType.WARN, arbiter, this, reason, Long.MAX_VALUE).commit()
+        return Bapp.plugin.getPunishmentManagerExplicit().createPunishment(PunishmentType.WARN, arbiter, this, reason, Long.MAX_VALUE).commit()
     }
 
     override fun warn(reason: String, arbiter: Arbiter, expiry: Long?): PunishmentResponse {
-        return manager.createPunishment(PunishmentType.WARN, arbiter, this, reason, expiry).commit()
+        return Bapp.plugin.getPunishmentManagerExplicit().createPunishment(PunishmentType.WARN, arbiter, this, reason, expiry).commit()
     }
 
     override fun kick(reason: String, arbiter: Arbiter): PunishmentResponse {
-        return manager.createPunishment(PunishmentType.KICK, arbiter, this, reason, Long.MAX_VALUE).commit()
+        return Bapp.plugin.getPunishmentManagerExplicit().createPunishment(PunishmentType.KICK, arbiter, this, reason, Long.MAX_VALUE).commit()
     }
 
     override fun getPunishments(): List<Punishment> {

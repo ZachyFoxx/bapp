@@ -7,6 +7,7 @@ package sh.foxboy.bapp.database
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import java.util.UUID
+import org.jetbrains.exposed.sql.Alias
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.Expression
 import org.jetbrains.exposed.sql.JoinType
@@ -63,7 +64,7 @@ class PostgresHandler() : WithPlugin {
         transaction(dbConnection) {
             try {
                 addLogger(ExposedLogger())
-                SchemaUtils.create(
+                SchemaUtils.createMissingTablesAndColumns(
                     AppealStatusesTable,
                     AppealTable,
                     PunishmentDataTable,
@@ -97,30 +98,37 @@ class PostgresHandler() : WithPlugin {
 
     fun getPunishmentById(id: Int): Punishment? {
         return transaction(dbConnection) {
-            val query = PunishmentsTable
-            .join(UserTable, JoinType.INNER, onColumn = PunishmentsTable.userId, otherColumn = UserTable.uniqueId) // Join with targetUser
-            .join(PunishmentDataTable, JoinType.INNER, onColumn = PunishmentsTable.id, otherColumn = PunishmentDataTable.punishmentTypeId) // Join with punishmentData
-            .join(UserTable, JoinType.INNER, onColumn = PunishmentDataTable.issuedBy, otherColumn = UserTable.uniqueId) // Join with issuedByUser
-            .join(PunishmentTypeTable, JoinType.INNER, onColumn = PunishmentsTable.punishmentTypeId, otherColumn = PunishmentTypeTable.id) // Join with punishmentType
-            .selectAll()
-            .where { PunishmentsTable.id eq id }
-            .firstOrNull()
+            // Create aliases for the tables using Alias
+            val punishmentAlias = Alias(PunishmentsTable, "punishments")
+            val userAlias = Alias(UserTable, "user")
+            val punishmentDataAlias = Alias(PunishmentDataTable, "punishment_data")
+            val punishmentTypeAlias = Alias(PunishmentTypeTable, "punishment_type")
+            val issuedByUserAlias = Alias(UserTable, "issued_by_user") // Alias for the arbiter
+
+            val query = punishmentAlias
+                .join(userAlias, JoinType.INNER, onColumn = punishmentAlias[PunishmentsTable.userId], otherColumn = userAlias[UserTable.uniqueId]) // Join with targetUser
+                .join(punishmentDataAlias, JoinType.INNER, onColumn = punishmentAlias[PunishmentsTable.id], otherColumn = punishmentDataAlias[PunishmentDataTable.punishmentTypeId]) // Join with punishmentData
+                .join(punishmentTypeAlias, JoinType.INNER, onColumn = punishmentAlias[PunishmentsTable.punishmentTypeId], otherColumn = punishmentTypeAlias[PunishmentTypeTable.id]) // Join with punishmentType
+                .join(issuedByUserAlias, JoinType.INNER, onColumn = punishmentDataAlias[PunishmentDataTable.issuedBy], otherColumn = issuedByUserAlias[UserTable.uniqueId]) // Join with issuedByUser (fixed join condition)
+                .selectAll()
+                .where { punishmentAlias[PunishmentsTable.id] eq id }
+                .firstOrNull()
 
             // If a row is found, map it to the Punishment object
             query?.let { row ->
                 // Get punishment type
-                val punishmentType = PunishmentType.valueOf(row[PunishmentTypeTable.name])
+                val punishmentType = PunishmentType.fromOrdinal(row[punishmentTypeAlias[PunishmentTypeTable.id]])
 
-                // Map the arbiter details
+                // Map the arbiter details (now using the alias for the arbiter)
                 val arbiter = BappArbiter(
-                    name = row[UserTable.username],
-                    uniqueId = row[PunishmentDataTable.issuedBy]
+                    name = row[issuedByUserAlias[UserTable.username]], // Access arbiter's username by name
+                    uniqueId = row[punishmentDataAlias[PunishmentDataTable.issuedBy]] // Access arbiter's UUID by name
                 )
 
                 // Map the target user details
                 val target = BappUser(
-                    name = row[UserTable.username],
-                    uniqueId = row[PunishmentsTable.userId]
+                    name = row[userAlias[UserTable.username]], // Access target user's username by name
+                    uniqueId = row[punishmentAlias[PunishmentsTable.userId]] // Access target user's UUID by name
                 )
 
                 // Return the punishment object
@@ -128,10 +136,10 @@ class PostgresHandler() : WithPlugin {
                     type = punishmentType,
                     arbiter = arbiter,
                     target = target,
-                    reason = row[PunishmentsTable.reason],
-                    expiry = row[PunishmentDataTable.endTime],
+                    reason = row[punishmentAlias[PunishmentsTable.reason]], // Access reason by name
+                    expiry = row[punishmentDataAlias[PunishmentDataTable.endTime]], // Access expiry by name
                     appealed = false,
-                    id = row[PunishmentsTable.id]
+                    id = row[punishmentAlias[PunishmentsTable.id]] // Access id by name
                 )
             }
         }

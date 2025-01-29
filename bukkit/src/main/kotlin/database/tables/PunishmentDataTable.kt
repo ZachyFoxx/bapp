@@ -10,6 +10,7 @@ import sh.foxboy.bapp.Constants
 
 object PunishmentDataTable : Table(Bapp.plugin.config.getString(Constants.SettingsPaths.DATABASE_TABLE_PREFIX, "bapp_") + "punishment_data") {
     val id = integer("id").autoIncrement() // Unique identifier for the punishment
+    val punishId = integer("punish_id").references(PunishmentsTable.id)
     val userId = uuid("user_id").references(UserTable.uniqueId) // The user receiving the punishment
     val punishmentTypeId = integer("punishment_type_id").references(PunishmentTypeTable.id) // Type of punishment
     val serverId = uuid("server_id").references(ServersTable.id) // The server where the punishment occurred

@@ -24,6 +24,15 @@ class BappPunishment(private val type: PunishmentType, private val arbiter: Arbi
         return this.id.toString()
     }
 
+    override fun toString(): String {
+        val arbiterName = arbiter.name
+        val arbiterUuid = arbiter.uniqueId
+        val targetName = target?.name
+        val targetUuid = target?.uniqueId
+
+        return "BappPunishment(type=$type, arbiter=Arbiter($arbiterName, $arbiterUuid, target=Target($targetName, $targetUuid), reason=$reason, expiry=$expiry, appealed=$appealed, id=$id)"
+    }
+
     override fun commit(): PunishmentResponse {
         try {
             if (target == null)

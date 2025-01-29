@@ -68,7 +68,8 @@ class Bapp : JavaPlugin(), BappAPI {
         CommandAPI.onEnable()
         BappAPI.registerService(this, this)
         permission = server.servicesManager.getRegistration(Permission::class.java)?.provider ?: throw RuntimeException("No permission provider not found!")
-
+        val test = postgresHandler.getPunishmentById(1)
+        println(test.toString())
         logger.info("$name ${description.version} enabled successfully!")
     }
 
