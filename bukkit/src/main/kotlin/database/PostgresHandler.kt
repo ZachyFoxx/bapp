@@ -20,6 +20,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import sh.foxboy.bapp.Constants
 import sh.foxboy.bapp.WithPlugin
 import sh.foxboy.bapp.api.entity.User
+import sh.foxboy.bapp.api.entity.Arbiter
 import sh.foxboy.bapp.api.punishment.Punishment
 import sh.foxboy.bapp.api.punishment.PunishmentType
 import sh.foxboy.bapp.api.punishment.SortBy
@@ -218,23 +219,59 @@ class PostgresHandler() : WithPlugin {
         return punishment
     }
 
-    // fun getPunishments(sortBy: SortBy, page: Int, pageSize: Int, arbiter: Arbiter): List<Punishment> {
-    //     val punishments = mutableListOf<Punishment>()
-    //     transaction(dbConnection) {
-    //         PunishmentsTable.selectAll()
-    //             .where { arbiterUniqueId eq arbiter.uniqueId.toString() }
-    //             .limit(pageSize, ((page - 1) * pageSize).toLong())
-    //             .orderBy(orderBy(sortBy))
-    //             .iterator().forEach {
-    //                 punishments.add(
-    //                     sh.foxboy.bapp.punishment.BappPunishment(
-    //                         PunishmentType.fromOrdinal(it[type]), BappArbiter(it[arbiterName], UUID.fromString(it[arbiterUniqueId])), BappUser(it[targetName], UUID.fromString(it[targetUniqueId])), it[reason], Date.from(Instant.ofEpochMilli(it[expiry])), it[appealed], it[punishId]
-    //                     )
-    //                 )
-    //             }
-    //     }
-    //     return punishments.toList()
-    // }
+    fun getPunishments(sortBy: SortBy, page: Int, pageSize: Int, arbiter: Arbiter): List<Punishment> {
+        val punishments = mutableListOf<Punishment>()
+        transaction(dbConnection) {
+            // Create aliases for the tables using Alias
+            val punishmentAlias = Alias(PunishmentsTable, "punishments")
+            val userAlias = Alias(UserTable, "user")
+            val punishmentDataAlias = Alias(PunishmentDataTable, "punishment_data")
+            val punishmentTypeAlias = Alias(PunishmentTypeTable, "punishment_type")
+            val issuedByUserAlias = Alias(UserTable, "issued_by_user") // Alias for the arbiter
+
+            val query = punishmentAlias
+                .join(userAlias, JoinType.INNER, onColumn = punishmentAlias[PunishmentsTable.userId], otherColumn = userAlias[UserTable.uniqueId]) // Join with targetUser
+                .join(punishmentDataAlias, JoinType.INNER, onColumn = punishmentAlias[PunishmentsTable.id], otherColumn = punishmentDataAlias[PunishmentDataTable.punishmentTypeId]) // Join with punishmentData
+                .join(punishmentTypeAlias, JoinType.INNER, onColumn = punishmentAlias[PunishmentsTable.punishmentTypeId], otherColumn = punishmentTypeAlias[PunishmentTypeTable.id]) // Join with punishmentType
+                .join(issuedByUserAlias, JoinType.INNER, onColumn = punishmentDataAlias[PunishmentDataTable.issuedBy], otherColumn = issuedByUserAlias[UserTable.uniqueId]) // Join with issuedByUser (fixed join condition)
+                .selectAll()
+                .where { punishmentDataAlias[PunishmentDataTable.issuedBy] eq arbiter.uniqueId }
+                .orderBy(orderBy(sortBy))
+                .offset(((page - 1) * pageSize).toLong())
+                .orderBy(orderBy(sortBy))
+
+                val iterator = query.iterator()
+    
+                while (iterator.hasNext()) {
+                    val row = iterator.next()
+                    val punishmentType = PunishmentType.valueOf(row[PunishmentTypeTable.name])
+    
+                    // Map the arbiter details
+                    val arbiter2 = BappArbiter(
+                        name = row[UserTable.username],
+                        uniqueId = row[PunishmentDataTable.issuedBy]
+                    )
+    
+                    // Map the target user details
+                    val target2 = BappUser(
+                        name = row[UserTable.username],
+                        uniqueId = row[PunishmentsTable.userId]
+                    )
+                    punishments.add(
+                        sh.foxboy.bapp.punishment.BappPunishment(
+                            type = punishmentType,
+                            arbiter = arbiter2,
+                            target = target2,
+                            reason = row[PunishmentsTable.reason],
+                            expiry = row[PunishmentDataTable.endTime],
+                            appealed = false,
+                            id = row[PunishmentsTable.id]
+                        )
+                    )
+                }
+            }
+            return punishments.toList()
+    }
 
     fun getPunishments(sortBy: SortBy, page: Int, pageSize: Int, user: User): List<Punishment> {
         val punishments = mutableListOf<Punishment>()
@@ -282,24 +319,6 @@ class PostgresHandler() : WithPlugin {
         }
         return punishments.toList()
     }
-
-    // fun getPunishments(sortBy: SortBy, page: Int, pageSize: Int, user: User): List<Punishment> {
-    //     val punishments = mutableListOf<Punishment>()
-    //     transaction(dbConnection) {
-    //         PunishmentsTable.selectAll()
-    //             .where { targetUniqueId eq user.uniqueId.toString() }
-    //             .limit(pageSize, ((page - 1) * pageSize).toLong())
-    //             .orderBy(orderBy(sortBy))
-    //             .iterator().forEach {
-    //                 punishments.add(
-    //                     sh.foxboy.bapp.punishment.BappPunishment(
-    //                         PunishmentType.fromOrdinal(it[type]), BappArbiter(it[arbiterName], UUID.fromString(it[arbiterUniqueId])), BappUser(it[targetName], UUID.fromString(it[targetUniqueId])), it[reason], Date.from(Instant.ofEpochMilli(it[expiry])), it[appealed], it[punishId]
-    //                     )
-    //                 )
-    //             }
-    //     }
-    //     return punishments.toList()
-    // }
 
     fun getPunishments(sortBy: SortBy, page: Int, pageSize: Int): List<Punishment> {
         val punishments = mutableListOf<Punishment>()
