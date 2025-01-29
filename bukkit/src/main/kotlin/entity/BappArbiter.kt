@@ -15,7 +15,7 @@ import sh.foxboy.bapp.api.punishment.SortBy
 
 class BappArbiter(private val name: String, private val uniqueId: UUID) : Arbiter {
 
-    private val manager = Bapp.plugin.punishmentManager
+    private val manager = Bapp.plugin.getPunishmentManagerExplicit()
 
     override fun ban(reason: String, arbiter: Arbiter): PunishmentResponse {
         return manager.createPunishment(PunishmentType.BAN, arbiter, this, reason, Long.MAX_VALUE).commit()

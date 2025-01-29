@@ -8,6 +8,7 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import java.util.UUID
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.Expression
 import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.SortOrder
@@ -15,17 +16,21 @@ import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.sql.Expression
 import sh.foxboy.bapp.Constants
 import sh.foxboy.bapp.WithPlugin
 import sh.foxboy.bapp.api.entity.User
 import sh.foxboy.bapp.api.punishment.Punishment
 import sh.foxboy.bapp.api.punishment.PunishmentType
 import sh.foxboy.bapp.api.punishment.SortBy
+import sh.foxboy.bapp.database.tables.AppealStatusesTable
+import sh.foxboy.bapp.database.tables.AppealTable
 import sh.foxboy.bapp.database.tables.PunishmentDataTable
 import sh.foxboy.bapp.database.tables.PunishmentTypeTable
 import sh.foxboy.bapp.database.tables.PunishmentsTable
 import sh.foxboy.bapp.database.tables.PunishmentsTable.reason
+import sh.foxboy.bapp.database.tables.ReputationFlagTypeTable
+import sh.foxboy.bapp.database.tables.ServerGroupTypeTable
+import sh.foxboy.bapp.database.tables.ServerGroupsTable
 import sh.foxboy.bapp.database.tables.UserTable
 import sh.foxboy.bapp.entity.BappArbiter
 import sh.foxboy.bapp.entity.BappUser
@@ -44,12 +49,12 @@ class PostgresHandler() : WithPlugin {
                 config.getInt(Constants.SettingsPaths.DATABASE_PORT)
             }/${
                 config.getString(Constants.SettingsPaths.DATABASE_DATABASE)
-            }?sslmode=${config.getString(Constants.SettingsPaths.DATABASE_USE_SSL, "disabled")}"
+            }"
 
-            driverClassName = "sh.foxboy.bapp.libs.org.postgresql.Driver"
-            username = config.getString(Constants.SettingsPaths.DATABASE_USERNAME, "postgres")!!
-            password = config.getString(Constants.SettingsPaths.DATABASE_PASSWORD)!!
-            maximumPoolSize = 2
+            driverClassName = "org.postgresql.Driver"
+            username = config.getString(Constants.SettingsPaths.DATABASE_USERNAME, "bapp")!!
+            password = config.getString(Constants.SettingsPaths.DATABASE_PASSWORD, "bapp")!!
+            maximumPoolSize = 10
         }
 
         val dataSource = HikariDataSource(config)
@@ -58,7 +63,17 @@ class PostgresHandler() : WithPlugin {
         transaction(dbConnection) {
             try {
                 addLogger(ExposedLogger())
-                SchemaUtils.createMissingTablesAndColumns(PunishmentsTable)
+                SchemaUtils.create(
+                    AppealStatusesTable,
+                    AppealTable,
+                    PunishmentDataTable,
+                    PunishmentsTable,
+                    PunishmentTypeTable,
+                    ReputationFlagTypeTable,
+                    ServerGroupsTable,
+                    ServerGroupTypeTable,
+                    UserTable
+                )
             } catch (e: Exception) {
                 logger.warning("[SQL] Failed to connect to SQL database - invalid connection info/database not up (${e.cause})")
                 success = false

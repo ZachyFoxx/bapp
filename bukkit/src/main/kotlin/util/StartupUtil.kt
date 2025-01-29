@@ -5,17 +5,13 @@
 package sh.foxboy.bapp.util
 
 import java.io.File
-import net.milkbowl.vault.permission.Permission
-import org.bukkit.Server
-import org.bukkit.plugin.RegisteredServiceProvider
 import sh.foxboy.bapp.WithPlugin
-import sh.foxboy.bapp.commands.debugPunishCommand
 
 object StartupUtil : WithPlugin {
 
     fun registerCommands() {
         // TODO commands
-        debugPunishCommand.register()
+        // debugPunishCommand.register()
     }
 
     fun setupConfig(): Boolean {

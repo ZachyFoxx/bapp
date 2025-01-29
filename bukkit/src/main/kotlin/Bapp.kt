@@ -5,7 +5,7 @@
 package sh.foxboy.bapp
 
 import dev.jorel.commandapi.CommandAPI
-import dev.jorel.commandapi.CommandAPIConfig
+import dev.jorel.commandapi.CommandAPIBukkitConfig
 import java.util.UUID
 import kr.entree.spigradle.annotations.PluginMain
 import net.milkbowl.vault.permission.Permission
@@ -34,19 +34,26 @@ class Bapp : JavaPlugin(), BappAPI {
 
     private lateinit var userCache: Cache<User>
     private lateinit var punishmentCache: Cache<Punishment>
-    private lateinit var punishmentManager: PunishmentManager
+    private val punishmentManager: PunishmentManager by lazy {
+        BappPunishmentManager() // This will only be initialized when first accessed, this prevents some fucky-wucky stuff with how we handle the Punishable entities.
+    }
 
     override fun getProvider(): Plugin {
         return this
     }
 
     override fun onLoad() {
+        CommandAPI.onLoad(CommandAPIBukkitConfig(this).verboseOutput(true))
         plugin = this
-        userCache = BappCache(User::class)
-        punishmentCache = BappCache(Punishment::class)
-        punishmentManager = BappPunishmentManager()
+        // this.punishmentManager = BappPunishmentManager()
 
         if (!StartupUtil.setupConfig()) throw RuntimeException("There was an error setting up the configuration")
+
+        postgresHandler = PostgresHandler()
+        if (!postgresHandler.init()) throw RuntimeException("There was an error setting up the database")
+
+        userCache = BappCache(User::class)
+        punishmentCache = BappCache(Punishment::class)
 
         (userCache as BappCache<User>).ttl = config.getLong("cache.user.ttl", 86400L)
         (userCache as BappCache<User>).maxSize = config.getInt("cache.user.entry-count", 1000)
@@ -54,16 +61,11 @@ class Bapp : JavaPlugin(), BappAPI {
         (punishmentCache as BappCache<Punishment>).ttl = config.getLong("cache.user.entry-count", 43200L)
         (punishmentCache as BappCache<Punishment>).maxSize = config.getInt("cache.punishment.entry-count", 500)
 
-        postgresHandler = PostgresHandler()
-
-        if (!postgresHandler.init()) throw RuntimeException("There was an error setting up the database")
-
-        CommandAPI.onLoad(CommandAPIConfig().verboseOutput(true))
         registerCommands()
     }
 
     override fun onEnable() {
-        CommandAPI.onEnable(this)
+        CommandAPI.onEnable()
         BappAPI.registerService(this, this)
         permission = server.servicesManager.getRegistration(Permission::class.java)?.provider ?: throw RuntimeException("No permission provider not found!")
 
@@ -74,7 +76,7 @@ class Bapp : JavaPlugin(), BappAPI {
         reloadConfig()
     }
 
-    override fun getPunishmentManager(): PunishmentManager {
+    override fun getPunishmentManagerExplicit(): PunishmentManager {
         return this.punishmentManager
     }
 

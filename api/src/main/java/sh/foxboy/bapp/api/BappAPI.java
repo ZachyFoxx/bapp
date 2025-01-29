@@ -1,17 +1,17 @@
 /*
- * Copyright (c) 2020-2021 Zachery Elliot <zachery@foxboy.sh>. All rights reserved.
+ * Copyright (c) 2020-2025 Zachery Elliot <notzachery@gmail.com>. All rights reserved.
  * Licensed under the MIT license, see LICENSE for more information.
  */
 package sh.foxboy.bapp.api;
 
-import sh.foxboy.bapp.api.cache.Cache;
-import sh.foxboy.bapp.api.entity.User;
-import sh.foxboy.bapp.api.managers.PunishmentManager;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import sh.foxboy.bapp.api.cache.Cache;
+import sh.foxboy.bapp.api.entity.User;
+import sh.foxboy.bapp.api.managers.PunishmentManager;
 import sh.foxboy.bapp.api.punishment.Punishment;
 
 /**
@@ -61,7 +61,7 @@ public interface BappAPI {
      * @return {@link PunishmentManager}
      */
     @NotNull
-    PunishmentManager getPunishmentManager();
+    PunishmentManager getPunishmentManagerExplicit();
 
     /**
      * Returns a cache of users

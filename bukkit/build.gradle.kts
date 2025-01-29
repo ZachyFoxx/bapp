@@ -20,26 +20,22 @@ repositories {
 dependencies {
     // jvm and kotlin dependencies
     implementation(kotlin("stdlib"))
-    implementation(project(":api"))
+    compileOnly(project(":api"))
 
     // server dependencies
     compileOnly(paper())
     compileOnly("com.github.MilkBowl:VaultAPI:1.7")
 
     // Command API
-    implementation("dev.jorel.CommandAPI:commandapi-shade:6.3.0")
-    compileOnly("dev.jorel.CommandAPI:commandapi-core:6.3.0")
+    implementation("dev.jorel:commandapi-bukkit-shade:9.7.0")
 
     // Postgres & Exposed
     implementation("org.jetbrains.exposed:exposed-core:0.58.0")
     implementation("org.jetbrains.exposed:exposed-jdbc:0.58.0")
-
-    // implementation("org.jetbrains.exposed", "exposed-core", "0.28.1")
-    // implementation("org.jetbrains.exposed", "exposed-jdbc", "0.28.1")
     implementation("pw.forst", "exposed-upsert", "1.1.0")
     
-    implementation("org.postgresql", "postgresql", "42.2.18")
-    implementation("com.zaxxer", "HikariCP", "3.4.5")
+    implementation("org.postgresql", "postgresql", "42.7.5")
+    implementation("com.zaxxer", "HikariCP", "6.2.1")
 }
 
 spotless {
@@ -50,7 +46,8 @@ spotless {
 }
 
 tasks.shadowJar {
-        archiveClassifier.set("")
+    minimize()
+    archiveClassifier.set("")
 }
 
 spigot {

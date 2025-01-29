@@ -14,7 +14,7 @@ import sh.foxboy.bapp.api.punishment.SortBy
 
 class BappUser(private val name: String, private val uniqueId: UUID) : sh.foxboy.bapp.api.entity.User {
 
-    private val manager = Bapp.plugin.punishmentManager
+    private val manager = Bapp.plugin.getPunishmentManagerExplicit()
 
     override fun getName(): String {
         return this.name

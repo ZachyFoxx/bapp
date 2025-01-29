@@ -15,9 +15,9 @@ cache:
 database:
   host: localhost
   port: 5432
-  database: dbname
-  username: root
-  password: root
+  database: bapp
+  username: bapp
+  password: bapp
   table-prefix: bapp_
   # Maximum number of times postgres will try to reconnect before giving up.
   max-reconnects: 5

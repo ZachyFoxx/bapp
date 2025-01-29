@@ -57,10 +57,9 @@ tasks.shadowJar {
     archiveClassifier.set("")
     val pkg = "sh.foxboy.bapp.libs."
     relocate("com.zaxxer", "${pkg}com.zaxxer")
-    relocate("org.postgresql", "${pkg}org.postgresql")
+    // relocate("org.postgresql", "${pkg}org.postgresql")
     relocate("dev.jorel", "${pkg}dev.jorel")
-    relocate("org.jetbrains.exposed", "${pkg}org.jetbrains.exposed")
-    relocate("org.postgresql", "${pkg}org.postgresql")
+    // relocate("org.jetbrains.exposed", "${pkg}org.jetbrains.exposed")
     relocate("pw.forst", "${pkg}pw.forst")
 }
 tasks.generateSpigotDescription {
