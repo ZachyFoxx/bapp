@@ -8,6 +8,7 @@ object ReputationFlagTypeTable : Table(Bapp.plugin.config.getString(Constants.Se
     val id = integer("id").autoIncrement() // Unique ID for reputation flag type
     val name = varchar("name", 50) // Name of the flag (e.g., "Cheating", "Toxicity", "Griefing")
     val description = text("description") // Description of the flag type
+    val weight = double("weight")
 
     override val primaryKey = PrimaryKey(id)
 }

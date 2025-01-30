@@ -19,8 +19,8 @@ import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import sh.foxboy.bapp.Constants
 import sh.foxboy.bapp.WithPlugin
-import sh.foxboy.bapp.api.entity.User
 import sh.foxboy.bapp.api.entity.Arbiter
+import sh.foxboy.bapp.api.entity.User
 import sh.foxboy.bapp.api.punishment.Punishment
 import sh.foxboy.bapp.api.punishment.PunishmentType
 import sh.foxboy.bapp.api.punishment.SortBy
@@ -33,6 +33,7 @@ import sh.foxboy.bapp.database.tables.PunishmentsTable.reason
 import sh.foxboy.bapp.database.tables.ReputationFlagTypeTable
 import sh.foxboy.bapp.database.tables.ServerGroupTypeTable
 import sh.foxboy.bapp.database.tables.ServerGroupsTable
+import sh.foxboy.bapp.database.tables.UserReputationTable
 import sh.foxboy.bapp.database.tables.UserTable
 import sh.foxboy.bapp.entity.BappArbiter
 import sh.foxboy.bapp.entity.BappUser
@@ -74,7 +75,8 @@ class PostgresHandler() : WithPlugin {
                     ReputationFlagTypeTable,
                     ServerGroupsTable,
                     ServerGroupTypeTable,
-                    UserTable
+                    UserTable,
+                    UserReputationTable
                 )
             } catch (e: Exception) {
                 logger.warning("[SQL] Failed to connect to SQL database - invalid connection info/database not up (${e.cause})")
@@ -241,17 +243,17 @@ class PostgresHandler() : WithPlugin {
                 .orderBy(orderBy(sortBy))
 
                 val iterator = query.iterator()
-    
+
                 while (iterator.hasNext()) {
                     val row = iterator.next()
                     val punishmentType = PunishmentType.valueOf(row[PunishmentTypeTable.name])
-    
+
                     // Map the arbiter details
                     val arbiter2 = BappArbiter(
                         name = row[UserTable.username],
                         uniqueId = row[PunishmentDataTable.issuedBy]
                     )
-    
+
                     // Map the target user details
                     val target2 = BappUser(
                         name = row[UserTable.username],

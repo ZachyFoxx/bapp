@@ -12,6 +12,6 @@ import sh.foxboy.bapp.WithPlugin
 
 class ExposedLogger : WithPlugin, SqlLogger {
     override fun log(context: StatementContext, transaction: Transaction) {
-        this.logger.fine("[bapp] ${context.expandArgs(transaction)}")
+        this.logger.fine("[bapp] [exposed] ${context.expandArgs(transaction)}")
     }
 }
