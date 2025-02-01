@@ -19,6 +19,7 @@ import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import sh.foxboy.bapp.Constants
 import sh.foxboy.bapp.WithPlugin
+import sh.foxboy.bapp.api.appeal.AppealStatus
 import sh.foxboy.bapp.api.entity.Arbiter
 import sh.foxboy.bapp.api.entity.User
 import sh.foxboy.bapp.api.punishment.Punishment
@@ -134,6 +135,8 @@ class PostgresHandler() : WithPlugin {
                     uniqueId = row[punishmentAlias[PunishmentsTable.userId]] // Access target user's UUID by name
                 )
 
+                val appealStatus = getAppealStatus(id)
+
                 // Return the punishment object
                 return@transaction sh.foxboy.bapp.punishment.BappPunishment(
                     type = punishmentType,
@@ -141,10 +144,24 @@ class PostgresHandler() : WithPlugin {
                     target = target,
                     reason = row[punishmentAlias[PunishmentsTable.reason]], // Access reason by name
                     expiry = row[punishmentDataAlias[PunishmentDataTable.endTime]], // Access expiry by name
-                    appealed = false,
+                    appealed = appealStatus == AppealStatus.APPROVED,
                     id = row[punishmentAlias[PunishmentsTable.id]] // Access id by name
                 )
             }
+        }
+    }
+
+    fun getAppealStatus(punishId: Int): AppealStatus {
+        return transaction(dbConnection) {
+            val query = AppealTable
+                .selectAll()
+                .where { AppealTable.punishmentId eq punishId }
+                .firstOrNull()
+            var status: AppealStatus = AppealStatus.NO_APPEAL
+            query?.let { row ->
+                status = AppealStatus.fromOrdinal(row[AppealTable.appealStatusId])
+            }
+            return@transaction status
         }
     }
 
@@ -183,6 +200,8 @@ class PostgresHandler() : WithPlugin {
                     uniqueId = row[punishmentAlias[PunishmentsTable.userId]] // Access target user's UUID by name
                 )
 
+                val appealStatus = getAppealStatus(row[punishmentAlias[PunishmentsTable.id]])
+
                 // Return the punishment object
                 return@transaction sh.foxboy.bapp.punishment.BappPunishment(
                     type = punishmentType,
@@ -190,7 +209,7 @@ class PostgresHandler() : WithPlugin {
                     target = target2,
                     reason = row[punishmentAlias[PunishmentsTable.reason]], // Access reason by name
                     expiry = row[punishmentDataAlias[PunishmentDataTable.endTime]], // Access expiry by name
-                    appealed = false,
+                    appealed = appealStatus == AppealStatus.APPROVED,
                     id = row[punishmentAlias[PunishmentsTable.id]] // Access id by name
                 )
             }
@@ -259,6 +278,9 @@ class PostgresHandler() : WithPlugin {
                         name = row[UserTable.username],
                         uniqueId = row[PunishmentsTable.userId]
                     )
+
+                    val appealStatus = getAppealStatus(row[PunishmentsTable.id])
+
                     punishments.add(
                         sh.foxboy.bapp.punishment.BappPunishment(
                             type = punishmentType,
@@ -266,8 +288,8 @@ class PostgresHandler() : WithPlugin {
                             target = target2,
                             reason = row[PunishmentsTable.reason],
                             expiry = row[PunishmentDataTable.endTime],
-                            appealed = false,
-                            id = row[PunishmentsTable.id]
+                            appealed = appealStatus == AppealStatus.APPROVED,
+                            id = row[punishmentAlias[PunishmentsTable.id]]
                         )
                     )
                 }
@@ -306,6 +328,9 @@ class PostgresHandler() : WithPlugin {
                     name = row[UserTable.username],
                     uniqueId = row[PunishmentsTable.userId]
                 )
+
+                val appealStatus = getAppealStatus(row[PunishmentsTable.id])
+
                 punishments.add(
                     sh.foxboy.bapp.punishment.BappPunishment(
                         type = punishmentType,
@@ -313,7 +338,7 @@ class PostgresHandler() : WithPlugin {
                         target = target2,
                         reason = row[PunishmentsTable.reason],
                         expiry = row[PunishmentDataTable.endTime],
-                        appealed = false,
+                        appealed = appealStatus == AppealStatus.APPROVED,
                         id = row[PunishmentsTable.id]
                     )
                 )
@@ -351,6 +376,9 @@ class PostgresHandler() : WithPlugin {
                     name = row[UserTable.username],
                     uniqueId = row[PunishmentsTable.userId]
                 )
+
+                val appealStatus = getAppealStatus(row[PunishmentsTable.id])
+
                 punishments.add(
                     sh.foxboy.bapp.punishment.BappPunishment(
                         type = punishmentType,
@@ -358,7 +386,7 @@ class PostgresHandler() : WithPlugin {
                         target = target2,
                         reason = row[PunishmentsTable.reason],
                         expiry = row[PunishmentDataTable.endTime],
-                        appealed = false,
+                        appealed = appealStatus == AppealStatus.APPROVED,
                         id = row[PunishmentsTable.id]
                     )
                 )

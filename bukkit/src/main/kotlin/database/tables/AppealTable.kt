@@ -10,12 +10,12 @@ import sh.foxboy.bapp.Constants
 
 object AppealTable : Table(Bapp.plugin.config.getString(Constants.SettingsPaths.DATABASE_TABLE_PREFIX, "bapp_") + "appeals") {
     val id = integer("id").autoIncrement() // Unique ID for appeal
-    val punishmentId = integer("punishment_id") // Foreign key referencing PunishmentsTable
+    val punishmentId = integer("punishment_id").references(PunishmentsTable.id) // Foreign key referencing PunishmentsTable
     val userId = uuid("user_id") // Foreign key referencing UsersTable
-    val appealStatusId = integer("appeal_status_id") // Foreign key referencing AppealStatusTable
+    val appealStatusId = integer("appeal_status_id").references(AppealStatusesTable.id) // Foreign key referencing AppealStatusTable
     val reason = text("reason") // Reason for the appeal
-    val createdAt = long("created_at") // Timestamp of when the appeal was created
-    val updatedAt = long("updated_at") // Timestamp of when the appeal was last updated
+    val createdAt = long("created_at").clientDefault { System.currentTimeMillis() } // Timestamp of when the appeal was created
+    val updatedAt = long("updated_at").clientDefault { System.currentTimeMillis() } // Timestamp of when the appeal was last updated
 
     override val primaryKey = PrimaryKey(id)
 }
