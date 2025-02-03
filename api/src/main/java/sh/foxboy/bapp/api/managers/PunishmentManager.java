@@ -5,10 +5,8 @@
 package sh.foxboy.bapp.api.managers;
 
 import java.util.List;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import sh.foxboy.bapp.api.entity.Arbiter;
 import sh.foxboy.bapp.api.entity.User;
 import sh.foxboy.bapp.api.flag.BehaviorFlag;
@@ -46,6 +44,15 @@ public interface PunishmentManager {
     List<Punishment> getPunishments(
         @NotNull Integer page,
         @NotNull Integer pageSize
+    );
+
+    @NotNull
+    Punishment createPunishment(
+        @NotNull PunishmentType type,
+        @NotNull Arbiter arbiter,
+        @Nullable User target,
+        @NotNull String reason,
+        @Nullable Long expiry
     );
 
     @NotNull

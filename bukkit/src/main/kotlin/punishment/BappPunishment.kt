@@ -39,19 +39,19 @@ class BappPunishment(private val type: PunishmentType, private val arbiter: Arbi
             if (target == null)
                 return PunishmentResponse.TARGET_NOT_EXIST
 
-            if (plugin.postgresHandler.getPunishmentById(id) != null)
+            // check if user already has active punishments
+            if (!plugin.postgresHandler.getActivePunishments(target.uniqueId, type).isEmpty())
                 return PunishmentResponse.PUNISHMENT_ALREADY_PUSHED
 
-            if ((plugin.postgresHandler.getLastPunishment(target.uniqueId) != null) && (plugin.postgresHandler.getLastPunishment(
-                    target.uniqueId
-                )?.isAppealed == false)
-            )
-                return PunishmentResponse.TARGET_ALREADY_PUNISHED
-
-            if (!plugin.permission.playerHas(Bukkit.getWorlds()[0].name, Bukkit.getOfflinePlayer(arbiter.uniqueId), "${Constants.Permissions.PREFIX}.$type"))
+            // Ensure our punishing user does in fact have permissions to execute this punishment
+            if (!plugin.permission.playerHas(Bukkit.getWorlds()[0].name, Bukkit.getOfflinePlayer(arbiter.uniqueId), "${Constants.Permissions.COMMAND_PREFIX}.$type"))
                 return PunishmentResponse.PERMISSION_DENIED
 
-            if (plugin.permission.playerHas(Bukkit.getWorlds()[0].name, Bukkit.getOfflinePlayer(target.uniqueId), "${Constants.Permissions.PREFIX}.$type.immune"))
+            if (
+                plugin.permission.playerHas(Bukkit.getWorlds()[0].name, Bukkit.getOfflinePlayer(target.uniqueId), "${Constants.Permissions.PREFIX}.immune.$type") &&
+                // if user has permission to bypass other's immunity, we'll proceed anyway.
+                !plugin.permission.playerHas(Bukkit.getWorlds()[0].name, Bukkit.getOfflinePlayer(arbiter.uniqueId), "${Constants.Permissions.PREFIX}.bypass.$type")
+            )
                 return PunishmentResponse.TARGET_IMMUNE
 
             plugin.postgresHandler.insertPunishment(this)

@@ -15,12 +15,12 @@ public enum PunishmentType {
 
     @NotNull
     public static PunishmentType fromOrdinal(@NotNull Integer ordinal) {
-        return switch (ordinal) {
-            case 0 -> BAN;
-            case 1 -> MUTE;
-            case 2 -> KICK;
-            case 3 -> WARN;
-            default -> UNKNOWN;
-        };
+        PunishmentType[] values = PunishmentType.values();
+        if (ordinal < 0 || ordinal >= values.length) {
+            throw new IllegalArgumentException(
+                "Invalid ordinal for PunishmentType: " + ordinal
+            );
+        }
+        return values[ordinal];
     }
 }

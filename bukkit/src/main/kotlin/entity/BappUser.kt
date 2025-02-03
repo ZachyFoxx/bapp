@@ -7,6 +7,7 @@ package sh.foxboy.bapp.entity
 import java.util.UUID
 import sh.foxboy.bapp.Bapp
 import sh.foxboy.bapp.api.entity.Arbiter
+import sh.foxboy.bapp.api.flag.BehaviorFlag
 import sh.foxboy.bapp.api.punishment.Punishment
 import sh.foxboy.bapp.api.punishment.PunishmentResponse
 import sh.foxboy.bapp.api.punishment.PunishmentType
@@ -32,6 +33,10 @@ class BappUser(private val name: String, private val uniqueId: UUID) : sh.foxboy
         return manager.createPunishment(PunishmentType.BAN, arbiter, this, reason, expiry).commit()
     }
 
+    override fun ban(reason: String, arbiter: Arbiter, expiry: Long?, flags: List<BehaviorFlag>?): PunishmentResponse {
+        return manager.createPunishment(PunishmentType.BAN, arbiter, this, reason, expiry, flags).commit()
+    }
+
     override fun mute(reason: String, arbiter: Arbiter): PunishmentResponse {
         return manager.createPunishment(PunishmentType.MUTE, arbiter, this, reason, Long.MAX_VALUE).commit()
     }
@@ -40,12 +45,20 @@ class BappUser(private val name: String, private val uniqueId: UUID) : sh.foxboy
         return manager.createPunishment(PunishmentType.MUTE, arbiter, this, reason, expiry).commit()
     }
 
+    override fun mute(reason: String, arbiter: Arbiter, expiry: Long?, flags: List<BehaviorFlag>?): PunishmentResponse {
+        return manager.createPunishment(PunishmentType.MUTE, arbiter, this, reason, expiry, flags).commit()
+    }
+
     override fun warn(reason: String, arbiter: Arbiter): PunishmentResponse {
         return manager.createPunishment(PunishmentType.WARN, arbiter, this, reason, Long.MAX_VALUE).commit()
     }
 
     override fun warn(reason: String, arbiter: Arbiter, expiry: Long?): PunishmentResponse {
         return manager.createPunishment(PunishmentType.WARN, arbiter, this, reason, expiry).commit()
+    }
+
+    override fun warn(reason: String, arbiter: Arbiter, expiry: Long?, flags: List<BehaviorFlag>?): PunishmentResponse {
+        return manager.createPunishment(PunishmentType.WARN, arbiter, this, reason, expiry, flags).commit()
     }
 
     override fun kick(reason: String, arbiter: Arbiter): PunishmentResponse {

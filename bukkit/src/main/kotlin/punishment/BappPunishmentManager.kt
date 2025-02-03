@@ -51,6 +51,16 @@ class BappPunishmentManager : PunishmentManager, WithPlugin {
         arbiter: Arbiter,
         target: User?,
         reason: String,
+        expiry: Long?
+    ): Punishment {
+        return BappPunishment(type, arbiter, target, reason, expiry, false, null)
+    }
+
+    override fun createPunishment(
+        type: PunishmentType,
+        arbiter: Arbiter,
+        target: User?,
+        reason: String,
         expiry: Long?,
         flags: List<BehaviorFlag>?
     ): Punishment {

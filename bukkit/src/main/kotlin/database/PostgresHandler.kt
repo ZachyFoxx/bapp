@@ -14,6 +14,7 @@ import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.addLogger
+import org.jetbrains.exposed.sql.andIfNotNull
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -154,6 +155,68 @@ class PostgresHandler() : WithPlugin {
                 )
             }
         }
+    }
+
+    fun getActivePunishments(target: UUID, type: PunishmentType): List<Punishment> {
+        val punishments = mutableListOf<Punishment>()
+        transaction(dbConnection) {
+            val punishmentAlias = Alias(PunishmentsTable, "punishments")
+            val userAlias = Alias(UserTable, "user")
+            val punishmentDataAlias = Alias(PunishmentDataTable, "punishment_data")
+            val punishmentTypeAlias = Alias(PunishmentTypeTable, "punishment_type")
+            val issuedByUserAlias = Alias(UserTable, "issued_by_user") // Alias for the arbiter
+
+            val query = punishmentAlias
+                .join(userAlias, JoinType.INNER, onColumn = punishmentAlias[PunishmentsTable.userId], otherColumn = userAlias[UserTable.uniqueId]) // Join with targetUser
+                .join(punishmentDataAlias, JoinType.INNER, onColumn = punishmentAlias[PunishmentsTable.id], otherColumn = punishmentDataAlias[PunishmentDataTable.punishmentTypeId]) // Join with punishmentData
+                .join(punishmentTypeAlias, JoinType.INNER, onColumn = punishmentAlias[PunishmentsTable.punishmentTypeId], otherColumn = punishmentTypeAlias[PunishmentTypeTable.id]) // Join with punishmentType
+                .join(issuedByUserAlias, JoinType.INNER, onColumn = punishmentDataAlias[PunishmentDataTable.issuedBy], otherColumn = issuedByUserAlias[UserTable.uniqueId]) // Join with issuedByUser (fixed join condition)
+                .selectAll()
+                .where {
+                    (punishmentAlias[PunishmentsTable.userId] eq target)
+                        .andIfNotNull { punishmentAlias[PunishmentsTable.punishmentTypeId] eq type.ordinal }
+                        .andIfNotNull { punishmentDataAlias[PunishmentDataTable.endTime] greater System.currentTimeMillis() }
+                }
+
+                val iterator = query.iterator()
+
+                while (iterator.hasNext()) {
+                    val row = iterator.next()
+                    // Get punishment type
+                    val punishmentType = PunishmentType.fromOrdinal(row[punishmentTypeAlias[PunishmentTypeTable.id]])
+
+                    // Map the arbiter details (now using the alias for the arbiter)
+                    val arbiter = BappArbiter(
+                        name = row[issuedByUserAlias[UserTable.username]], // Access arbiter's username by name
+                        uniqueId = row[punishmentDataAlias[PunishmentDataTable.issuedBy]] // Access arbiter's UUID by name
+                    )
+
+                    // Map the target user details
+                    val target2 = BappUser(
+                        name = row[userAlias[UserTable.username]], // Access target user's username by name
+                        uniqueId = row[punishmentAlias[PunishmentsTable.userId]] // Access target user's UUID by name
+                    )
+
+                    val appealStatus = getAppealStatus(row[punishmentAlias[PunishmentsTable.id]])
+                    if (appealStatus == AppealStatus.APPROVED) continue
+
+                    val flags: Int? = row[punishmentDataAlias[PunishmentDataTable.flags]]
+
+                    punishments.add(
+                        sh.foxboy.bapp.punishment.BappPunishment(
+                            type = punishmentType,
+                            arbiter = arbiter,
+                            target = target2,
+                            reason = row[PunishmentsTable.reason], // Access reason by name
+                            expiry = row[PunishmentDataTable.endTime], // Access expiry by name
+                            appealed = appealStatus == AppealStatus.APPROVED,
+                            id = row[PunishmentsTable.id], // Access id by name
+                            flags = flags?.let { BehaviorFlag.decodeFlags(it) }
+                        )
+                    )
+            }
+        }
+        return punishments.toList()
     }
 
     fun getAppealStatus(punishId: Int): AppealStatus {

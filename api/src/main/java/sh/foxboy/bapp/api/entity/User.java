@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Zachery Elliot <notzachery@gmail.com>. All rights reserved.
+ * Copyright (c) 2022-2025 Zachery Elliot <notzachery@gmail.com>. All rights reserved.
  * Licensed under the MIT license, see LICENSE for more information.
  */
 package sh.foxboy.bapp.api.entity;
@@ -19,6 +19,7 @@ public interface User extends Punishable, Cacheable {
     UUID getUniqueId();
 
     @NotNull
+    @Override
     List<Punishment> getPunishments();
 
     @NotNull

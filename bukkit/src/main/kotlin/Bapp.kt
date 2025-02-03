@@ -69,6 +69,9 @@ class Bapp : JavaPlugin(), BappAPI {
     }
 
     override fun onEnable() {
+        if (this.panic)
+            throw RuntimeException("There was an error initializing the BAPP Plugin, please see logs for details.")
+
         CommandAPI.onEnable()
         BappAPI.registerService(this, this)
         permission = server.servicesManager.getRegistration(Permission::class.java)?.provider ?: throw RuntimeException("No permission provider not found!")

@@ -153,12 +153,18 @@ Flags are case-insensitive:
 - **`punishplugin.command.global.manage`**: Grants full administrative control over punishments globally (e.g., issuing, viewing, undoing, and annotating punishments for all players).
 - **`punishplugin.command.global.view`**: Grants the ability to view punishments and related data globally (e.g., all punishments across all servers).
 
+## Immunity Permissions
+- **`punishplugin.immune.ban`**: Allows the user to bypass bans and unban players (`/ban`).
+- **`punishplugin.immune.mute`**: Allows the user to bypass mutes and unmute players (`/mute`, `/tempmute`).
+- **`punishplugin.immune.kick`**: Allows the user to bypass kicks and prevent being kicked (`/kick`).
+- **`punishplugin.immune.warn`**: Allows the user to bypass warnings (`/warn`).
+- **`punishplugin.immune.freeze`**: Allows the user to bypass freeze effects (`/freeze`, `/unfreeze`).
+
 ## Bypass Permissions
-- **`punishplugin.bypass.ban`**: Allows the user to bypass bans and unban players (`/ban`).
-- **`punishplugin.bypass.mute`**: Allows the user to bypass mutes and unmute players (`/mute`, `/tempmute`).
-- **`punishplugin.bypass.kick`**: Allows the user to bypass kicks and prevent being kicked (`/kick`).
-- **`punishplugin.bypass.warn`**: Allows the user to bypass warnings (`/warn`).
-- **`punishplugin.bypass.freeze`**: Allows the user to bypass freeze effects (`/freeze`, `/unfreeze`).
+- **`punishplugin.bypass.ban`**: Allows the user to bypass bans.
+- **`punishplugin.bypass.mute`**: Allows the user to bypass mutes.
+- **`punishplugin.bypass.kick`**: Allows the user to bypass kicks.
+- **`punishplugin.bypass.warn`**: Allows the user to bypass warns.
 - **`punishplugin.bypass.lockchat`**: Allows the user to bypass chat lock and slow chat restrictions (`/lockchat`, `/slowchat`).
 - **`punishplugin.bypass.slowchat`**: Allows the user to bypass slow chat restrictions and send messages faster (`/slowchat`).
 - **`punishplugin.bypass.all`**: Allows the user to commit actions on users with bypass permissions.

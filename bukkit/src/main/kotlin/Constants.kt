@@ -7,6 +7,7 @@ package sh.foxboy.bapp
 object Constants {
     object Permissions {
         const val PREFIX = "bapp"
+        const val COMMAND_PREFIX = "bapp.command"
         const val BAN = "$PREFIX.ban"
         const val MUTE = "$PREFIX.mute"
         const val KICK = "$PREFIX.kick"
