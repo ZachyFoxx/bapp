@@ -19,6 +19,7 @@ object PunishmentDataTable : Table(Bapp.plugin.config.getString(Constants.Settin
     val startTime = long("start_time") // When the punishment starts
     val endTime = long("end_time").nullable() // When the punishment ends (nullable for indefinite punishments)
     val active = bool("active").default(true) // Whether the punishment is active
+    val flags = integer("flags").nullable() // Punishment flags
     val createdAt = long("created_at").clientDefault { System.currentTimeMillis() } // Timestamp of creation
     val updatedAt = long("updated_at").clientDefault { System.currentTimeMillis() } // Timestamp of last update
 

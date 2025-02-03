@@ -31,6 +31,7 @@ class Bapp : JavaPlugin(), BappAPI {
 
     lateinit var permission: Permission
     lateinit var postgresHandler: PostgresHandler
+    var panic: Boolean = false
 
     private lateinit var userCache: Cache<User>
     private lateinit var punishmentCache: Cache<Punishment>
@@ -50,7 +51,10 @@ class Bapp : JavaPlugin(), BappAPI {
         if (!StartupUtil.setupConfig()) throw RuntimeException("There was an error setting up the configuration")
 
         postgresHandler = PostgresHandler()
-        if (!postgresHandler.init()) throw RuntimeException("There was an error setting up the database")
+        if (!postgresHandler.init()) {
+            panic = true
+            throw RuntimeException("There was an error setting up the database")
+        }
 
         userCache = BappCache(User::class)
         punishmentCache = BappCache(Punishment::class)

@@ -2,7 +2,7 @@
  * Copyright (c) 2025 Zachery Elliot <notzachery@gmail.com>. All rights reserved.
  * Licensed under the MIT license, see LICENSE for more information.
  */
-package sh.foxboy.bapp.api.reputation;
+package sh.foxboy.bapp.api.flag;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Reputation flag and weights for users.
  */
-public enum ReputationFlag {
+public enum BehaviorFlag {
     // User Behavior & Trustworthiness
     NEW_ACCOUNT(0.2),
     FREQUENT_REPORTS(0.3),
@@ -49,13 +49,16 @@ public enum ReputationFlag {
     // Security & Exploits
     SUSPICIOUS_IP_ACTIVITY(0.5),
     EXPLOIT_ATTEMPT(0.9),
-    UNAUTHORIZED_ACCESS_ATTEMPT(0.9);
+    UNAUTHORIZED_ACCESS_ATTEMPT(0.9),
+    
+    // MISC
+    SILENT(0.0); // silent punishment flag
 
     // Define a static set of critical flags for quick lookup
-    private final double reputationScore;
+    private final double severity;
 
     // Define a static set of critical flags for quick lookup
-    private static final Set<ReputationFlag> CRITICAL_FLAGS = EnumSet.of(
+    private static final Set<BehaviorFlag> CRITICAL_FLAGS = EnumSet.of(
         BAN_EVASION,
         CHARGEBACK_RISK,
         SCAMMING_REAL,
@@ -69,8 +72,8 @@ public enum ReputationFlag {
         ANTI_CHEAT_BYPASS
     );
 
-    ReputationFlag(double reputationScore) {
-        this.reputationScore = reputationScore;
+    BehaviorFlag(double reputationScore) {
+        this.severity = reputationScore;
     }
 
     /**
@@ -86,37 +89,37 @@ public enum ReputationFlag {
      * @return The reputation score, between 0 (untrusted) and 1 (trusted).
      */
     public double getReputationScore() {
-        return reputationScore;
+        return severity;
     }
 
     /**
-     * Get the ReputationFlag from an ordinal value.
+     * Get the Flags from an ordinal value.
      * @param ordinal The ordinal value.
-     * @return The corresponding ReputationFlag.
+     * @return The corresponding Flags.
      * @throws IllegalArgumentException if the ordinal is out of range.
      */
     @NotNull
-    public static ReputationFlag fromOrdinal(@NotNull Integer ordinal) {
-        ReputationFlag[] values = ReputationFlag.values();
+    public static BehaviorFlag fromOrdinal(@NotNull Integer ordinal) {
+        BehaviorFlag[] values = BehaviorFlag.values();
         if (ordinal < 0 || ordinal >= values.length) {
             throw new IllegalArgumentException(
-                "Invalid ordinal for ReputationFlag: " + ordinal
+                "Invalid ordinal for Flags: " + ordinal
             );
         }
         return values[ordinal];
     }
 
-    public static int encodeReputationFlags(List<ReputationFlag> flags) {
+    public static int encodeFlags(List<BehaviorFlag> flags) {
         int bitmask = 0;
-        for (ReputationFlag flag : flags) {
+        for (BehaviorFlag flag : flags) {
             bitmask |= (1 << flag.ordinal());
         }
         return bitmask;
     }
 
-    public static List<ReputationFlag> decodeReputationFlags(int bitmask) {
-        List<ReputationFlag> flags = new ArrayList<>();
-        for (ReputationFlag flag : ReputationFlag.values()) {
+    public static List<BehaviorFlag> decodeFlags(int bitmask) {
+        List<BehaviorFlag> flags = new ArrayList<>();
+        for (BehaviorFlag flag : BehaviorFlag.values()) {
             if ((bitmask & (1 << flag.ordinal())) != 0) {
                 flags.add(flag);
             }

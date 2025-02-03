@@ -8,6 +8,7 @@ import java.util.UUID
 import sh.foxboy.bapp.WithPlugin
 import sh.foxboy.bapp.api.entity.Arbiter
 import sh.foxboy.bapp.api.entity.User
+import sh.foxboy.bapp.api.flag.BehaviorFlag
 import sh.foxboy.bapp.api.managers.PunishmentManager
 import sh.foxboy.bapp.api.punishment.Punishment
 import sh.foxboy.bapp.api.punishment.PunishmentType
@@ -50,9 +51,22 @@ class BappPunishmentManager : PunishmentManager, WithPlugin {
         arbiter: Arbiter,
         target: User?,
         reason: String,
-        expiry: Long?
+        expiry: Long?,
+        flags: List<BehaviorFlag>?
     ): Punishment {
-        return BappPunishment(type, arbiter, target, reason, expiry)
+        return BappPunishment(type, arbiter, target, reason, expiry, false, flags)
+    }
+
+    override fun createPunishment(
+        type: PunishmentType,
+        arbiter: Arbiter,
+        target: User?,
+        reason: String,
+        expiry: Long?,
+        flags: List<BehaviorFlag>?,
+        appealed: Boolean
+    ): Punishment {
+        return BappPunishment(type, arbiter, target, reason, expiry, appealed, flags)
     }
 
     override fun deletePunishment(punishment: Punishment): Punishment {

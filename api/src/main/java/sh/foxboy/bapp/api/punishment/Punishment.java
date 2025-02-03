@@ -4,11 +4,13 @@
  */
 package sh.foxboy.bapp.api.punishment;
 
+import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import sh.foxboy.bapp.api.cache.Cacheable;
 import sh.foxboy.bapp.api.entity.Arbiter;
 import sh.foxboy.bapp.api.entity.User;
+import sh.foxboy.bapp.api.flag.BehaviorFlag;
 
 public interface Punishment extends Cacheable {
     @NotNull
@@ -31,6 +33,9 @@ public interface Punishment extends Cacheable {
 
     @Nullable
     Long getExpiry();
+
+    @Nullable
+    List<BehaviorFlag> getFlags();
 
     @NotNull
     Boolean isAppealed();

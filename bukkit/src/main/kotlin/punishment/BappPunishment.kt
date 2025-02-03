@@ -11,11 +11,12 @@ import sh.foxboy.bapp.Constants
 import sh.foxboy.bapp.WithPlugin
 import sh.foxboy.bapp.api.entity.Arbiter
 import sh.foxboy.bapp.api.entity.User
+import sh.foxboy.bapp.api.flag.BehaviorFlag
 import sh.foxboy.bapp.api.punishment.Punishment
 import sh.foxboy.bapp.api.punishment.PunishmentResponse
 import sh.foxboy.bapp.api.punishment.PunishmentType
 
-class BappPunishment(private val type: PunishmentType, private val arbiter: Arbiter, private val target: User?, private var reason: String?, private var expiry: Long?, private var appealed: Boolean = false, private var id: Int = Bapp.plugin.postgresHandler.getLastId() + 1) : Punishment,
+class BappPunishment(private val type: PunishmentType, private val arbiter: Arbiter, private val target: User?, private var reason: String?, private var expiry: Long?, private var appealed: Boolean = false, private var flags: List<BehaviorFlag>?, private var id: Int = Bapp.plugin.postgresHandler.getLastId() + 1) : Punishment,
     WithPlugin {
 
     private var tmpreason = reason ?: "You have been punished!"
@@ -30,7 +31,7 @@ class BappPunishment(private val type: PunishmentType, private val arbiter: Arbi
         val targetName = target?.name
         val targetUuid = target?.uniqueId
 
-        return "BappPunishment(type=$type, arbiter=Arbiter($arbiterName, $arbiterUuid, target=Target($targetName, $targetUuid), reason=$reason, expiry=$expiry, appealed=$appealed, id=$id)"
+        return "BappPunishment(type=$type, arbiter=Arbiter($arbiterName, $arbiterUuid), target=Target($targetName, $targetUuid), reason=$reason, expiry=$expiry, appealed=$appealed, id=$id)"
     }
 
     override fun commit(): PunishmentResponse {
@@ -87,5 +88,9 @@ class BappPunishment(private val type: PunishmentType, private val arbiter: Arbi
 
     override fun isAppealed(): Boolean {
         return this.appealed
+    }
+
+    override fun getFlags(): List<BehaviorFlag>? {
+        return this.flags
     }
 }
