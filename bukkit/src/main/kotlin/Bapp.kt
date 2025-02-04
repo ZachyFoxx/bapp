@@ -17,11 +17,14 @@ import sh.foxboy.bapp.api.entity.User
 import sh.foxboy.bapp.api.managers.PunishmentManager
 import sh.foxboy.bapp.api.punishment.Punishment
 import sh.foxboy.bapp.cache.BappCache
+import sh.foxboy.bapp.commands.PunishmentFlag
+import sh.foxboy.bapp.commands.parseFlags
 import sh.foxboy.bapp.database.PostgresHandler
 import sh.foxboy.bapp.punishment.BappPunishmentManager
 import sh.foxboy.bapp.util.StartupUtil
 import sh.foxboy.bapp.util.StartupUtil.registerCommands
 import sh.foxboy.bapp.utils.MessageFormatter
+import sh.foxboy.bapp.utils.TimeUtil
 
 @PluginMain
 class Bapp : JavaPlugin(), BappAPI {
@@ -80,18 +83,35 @@ class Bapp : JavaPlugin(), BappAPI {
         permission = server.servicesManager.getRegistration(Permission::class.java)?.provider ?: throw RuntimeException("No permission provider not found!")
         val test = postgresHandler.getPunishmentById(1)
         println(test.toString())
-        val placeholders = mapOf(
-            "player" to "BillyBob",
-            "target" to "FuckFace",
-            "reason" to "Get banned nerd"
-        )
 
+        val player = "billbob"
+        val reason = "ur banned nerd!"
+        val flagsRaw = "SGL"
+
+        val flags = parseFlags(flagsRaw)
+
+        val placeholders = mutableMapOf<String, String>()
+        placeholders["player"] = "fuckface"
+        placeholders["target"] = player
+        placeholders["reason"] = reason
+
+        // Define conditions dynamically
         val conditions = mapOf(
-            "silent" to true
+            "silent" to flags.contains(PunishmentFlag.SILENT)
         )
 
+        flags.forEach { flg ->
+            println(flg.toString())
+        }
+
+        // Get the announcement message with conditions evaluated
         val announcementMessage = messageFormatter.getMessage("ban.announcement", placeholders, conditions)
+
         logger.info(announcementMessage)
+
+        println(TimeUtil.parseDuration("1y2m3w4d5h6m7s"))
+        println(TimeUtil.convertDurationToSeconds(TimeUtil.parseDuration("1y2m3w4d5h6m7s")))
+        println(TimeUtil.convertTimestampToString(System.currentTimeMillis() + 86400 * 1000L))
 
         logger.info("$name ${description.version} enabled successfully!")
     }

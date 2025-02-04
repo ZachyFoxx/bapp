@@ -7,35 +7,41 @@
 // import sh.foxboy.bapp.commands.commandStub
 // import sh.foxboy.bapp.commands.messageFormatter
 // import sh.foxboy.bapp.commands.parseFlags
+// import sh.foxboy.bapp.commands.detectFlags
+// import sh.foxboy.bapp.commands.parseServerScope
+// import sh.foxboy.bapp.commands.parseReason
 
 // val banCommand = commandStub("ban", "")
 //     .withArguments(
-//         PlayerArgument("player"),
-//         StringArgument("reason").setOptional(true),
-//         StringArgument("flags").setOptional(true) // For flags like -SG, -SL, etc.
+//         PlayerArgument("player"), // Target player
+//         StringArgument("input").setOptional(true) // Single input argument to process
 //     )
 //     .executes(CommandExecutor { sender, args ->
 //         val player = args[0] as Player
-//         val reason = args[1] as? String ?: "You have been banned!"
-//         val flagsRaw = args[2] as? String ?: ""
+//         val input = args[1] as? String ?: ""
 
-//         val flags = parseFlags(flagsRaw)
+//         // Parse the input manually to extract the server, reason, flags
+//         val serverScope = parseServerScope(input)
+//         val flags = parseFlags(input)
+//         val stringFlags = detectFlags(input)
+//         val reason = parseReason(input, serverScope, stringFlags)
 
+//         // Create placeholders for the messages
 //         val placeholders = mutableMapOf<String, String>()
 //         placeholders["player"] = player.name
 //         placeholders["target"] = player.name
 //         placeholders["reason"] = reason
+//         placeholders["serverScope"] = serverScope ?: "No server scope provided"
 
 //         // Define conditions dynamically
 //         val conditions = mapOf(
-//             "silent" to true,
-//             "isBanned" to true // Example of another condition
+//             "silent" to true
 //         )
 
 //         // Get the announcement message with conditions evaluated
-//         val announcementMessage = messageFormatter.getMessage("ban.announcement", *placeholders.values.toTypedArray(), conditions)
+//         val announcementMessage = messageFormatter.getMessage("ban.announcement", placeholders, conditions)
 
-//         // Process the ban with the parsed flags
-//         // banPlayer(player, reason, banType)
-//         // sender.sendMessage("Player ${player.name} banned with reason: $reason and flags: $banType")
+//         // Process the ban with the parsed flags and server scope
+//         // banPlayer(player, reason, serverScope, flags)
+//         sender.sendMessage("Player ${player.name} banned with reason: $reason, flags: $flags for server: $serverScope")
 //     })

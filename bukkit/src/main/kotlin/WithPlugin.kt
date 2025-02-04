@@ -13,4 +13,7 @@ interface WithPlugin {
 
     val config
         get() = this.plugin.config
+
+    val messageFormatter
+        get() = this.plugin.messageFormatter
 }

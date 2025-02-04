@@ -1,6 +1,23 @@
-uuid: ""
+server: 'lobby'
+
+default_server_scope: '*'
 
 language: en
+
+# If true, punishments will be silent by default, you can use the -P flag to announce these.
+silent_mode: false
+
+# If true, broadcasts will be sent across all bungeecord servers containing this plugin
+global_broadcasts: true
+
+# Broadcast messages only in servers matching the names in this list
+broadcast_whitelist:
+  - "lobby"
+  - "survival"
+
+# Prevent messages from being broadcasted in this server
+broadcast_blacklist:
+  - "kitpvp"
 
 cache:
   user:
@@ -25,3 +42,36 @@ database:
   max-reconnects: 5
   # Use SSL?
   use-ssl: disabled
+
+#############
+# DURATIONS #
+#############
+# The highest matching permission will apply for duration limits.
+# Players with the "bapp.groups.exempt" permission will be exempt from duration limits.
+groups:
+  helper:
+    permission: bapp.groups.helper
+    max_ban_duration: 1 week
+    max_mute_duration: 2 weeks
+    # Restrict to template-based punishments for certain groups
+    require_template: true
+    # Cooldown duration in seconds
+    cooldown:
+      ban: 86400
+      mute: 30
+      kick: 30
+      warn: 30
+
+  moderation:
+    permission: bapp.groups.moderator
+    max_ban_duration: 2 months
+    max_mute_duration: 3 months
+    cooldown:
+      ban: 0 # 0 for no cooldown
+      mute: 30
+      kick: 30
+      warn: 30
+
+  # If set to true, any punishment duration exceeding the configured limit will be reduced to the max allowed duration.
+  # If false, an error will occur if the duration exceeds the limit.
+  reduce_to_limit: false
