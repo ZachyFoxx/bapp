@@ -45,7 +45,7 @@ class PostgresHandler() : WithPlugin {
     lateinit var dbConnection: Database
 
     fun init(): Boolean {
-        var success = false
+        var success: Boolean
         this.logger.info("[SQL] Checking SQL database has been set up correctly...")
 
         val config = HikariConfig().apply {

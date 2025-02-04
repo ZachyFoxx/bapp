@@ -21,6 +21,7 @@ import sh.foxboy.bapp.database.PostgresHandler
 import sh.foxboy.bapp.punishment.BappPunishmentManager
 import sh.foxboy.bapp.util.StartupUtil
 import sh.foxboy.bapp.util.StartupUtil.registerCommands
+import sh.foxboy.bapp.utils.MessageFormatter
 
 @PluginMain
 class Bapp : JavaPlugin(), BappAPI {
@@ -28,7 +29,7 @@ class Bapp : JavaPlugin(), BappAPI {
     companion object {
         lateinit var plugin: Bapp
     }
-
+    lateinit var messageFormatter: MessageFormatter
     lateinit var permission: Permission
     lateinit var postgresHandler: PostgresHandler
     var panic: Boolean = false
@@ -65,6 +66,8 @@ class Bapp : JavaPlugin(), BappAPI {
         (punishmentCache as BappCache<Punishment>).ttl = config.getLong("cache.user.entry-count", 43200L)
         (punishmentCache as BappCache<Punishment>).maxSize = config.getInt("cache.punishment.entry-count", 500)
 
+        messageFormatter = MessageFormatter(this)
+
         registerCommands()
     }
 
@@ -77,6 +80,19 @@ class Bapp : JavaPlugin(), BappAPI {
         permission = server.servicesManager.getRegistration(Permission::class.java)?.provider ?: throw RuntimeException("No permission provider not found!")
         val test = postgresHandler.getPunishmentById(1)
         println(test.toString())
+        val placeholders = mapOf(
+            "player" to "BillyBob",
+            "target" to "FuckFace",
+            "reason" to "Get banned nerd"
+        )
+
+        val conditions = mapOf(
+            "silent" to true
+        )
+
+        val announcementMessage = messageFormatter.getMessage("ban.announcement", placeholders, conditions)
+        logger.info(announcementMessage)
+
         logger.info("$name ${description.version} enabled successfully!")
     }
 

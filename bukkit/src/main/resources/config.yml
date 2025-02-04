@@ -1,5 +1,7 @@
 uuid: ""
 
+language: en
+
 cache:
   user:
     # Defalt: 24 hours
