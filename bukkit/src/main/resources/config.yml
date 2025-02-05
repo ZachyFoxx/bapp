@@ -51,8 +51,8 @@ database:
 groups:
   helper:
     permission: bapp.groups.helper
-    max_ban_duration: 1 week
-    max_mute_duration: 2 weeks
+    max_ban_duration: 1w
+    max_mute_duration: 2w
     # Restrict to template-based punishments for certain groups
     require_template: true
     # Cooldown duration in seconds
@@ -64,8 +64,8 @@ groups:
 
   moderation:
     permission: bapp.groups.moderator
-    max_ban_duration: 2 months
-    max_mute_duration: 3 months
+    max_ban_duration: 2mo
+    max_mute_duration: 3mo
     cooldown:
       ban: 0 # 0 for no cooldown
       mute: 30

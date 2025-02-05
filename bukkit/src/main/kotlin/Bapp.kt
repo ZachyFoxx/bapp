@@ -109,8 +109,8 @@ class Bapp : JavaPlugin(), BappAPI {
 
         logger.info(announcementMessage)
 
-        println(TimeUtil.parseDuration("1y2m3w4d5h6m7s"))
-        println(TimeUtil.convertDurationToSeconds(TimeUtil.parseDuration("1y2m3w4d5h6m7s")))
+        println(TimeUtil.parseDuration("1y2mo3w4d5h6m7s"))
+        println(TimeUtil.convertDurationToSeconds(TimeUtil.parseDuration("1y2mo3w4d5h6m7s")!!))
         println(TimeUtil.convertTimestampToString(System.currentTimeMillis() + 86400 * 1000L))
 
         logger.info("$name ${description.version} enabled successfully!")

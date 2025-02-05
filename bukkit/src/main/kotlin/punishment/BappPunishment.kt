@@ -5,6 +5,7 @@
 package sh.foxboy.bapp.punishment
 
 import java.lang.Exception
+import java.util.UUID
 import org.bukkit.Bukkit
 import sh.foxboy.bapp.Bapp
 import sh.foxboy.bapp.Constants
@@ -15,6 +16,7 @@ import sh.foxboy.bapp.api.flag.BehaviorFlag
 import sh.foxboy.bapp.api.punishment.Punishment
 import sh.foxboy.bapp.api.punishment.PunishmentResponse
 import sh.foxboy.bapp.api.punishment.PunishmentType
+import sh.foxboy.bapp.utils.TimeUtil
 
 class BappPunishment(private val type: PunishmentType, private val arbiter: Arbiter, private val target: User?, private var reason: String?, private var expiry: Long?, private var appealed: Boolean = false, private var flags: List<BehaviorFlag>?, private var id: Int = Bapp.plugin.postgresHandler.getLastId() + 1) : Punishment,
     WithPlugin {
@@ -36,30 +38,97 @@ class BappPunishment(private val type: PunishmentType, private val arbiter: Arbi
 
     override fun commit(): PunishmentResponse {
         try {
-            if (target == null)
-                return PunishmentResponse.TARGET_NOT_EXIST
+            // 1. Verify that the target exists.
+            if (target == null) return PunishmentResponse.TARGET_NOT_EXIST
 
-            // check if user already has active punishments
-            if (!plugin.postgresHandler.getActivePunishments(target.uniqueId, type).isEmpty())
+            // 2. Check if the target already has an active punishment of this type.
+            if (hasActivePunishment(target.uniqueId, type))
                 return PunishmentResponse.PUNISHMENT_ALREADY_PUSHED
 
-            // Ensure our punishing user does in fact have permissions to execute this punishment
-            if (!plugin.permission.playerHas(Bukkit.getWorlds()[0].name, Bukkit.getOfflinePlayer(arbiter.uniqueId), "${Constants.Permissions.COMMAND_PREFIX}.$type"))
+            // 3. Verify that the punisher (arbiter) has permission to execute this punishment.
+            if (!hasPunisherPermission(arbiter.uniqueId, type))
                 return PunishmentResponse.PERMISSION_DENIED
 
-            if (
-                plugin.permission.playerHas(Bukkit.getWorlds()[0].name, Bukkit.getOfflinePlayer(target.uniqueId), "${Constants.Permissions.PREFIX}.immune.$type") &&
-                // if user has permission to bypass other's immunity, we'll proceed anyway.
-                !plugin.permission.playerHas(Bukkit.getWorlds()[0].name, Bukkit.getOfflinePlayer(arbiter.uniqueId), "${Constants.Permissions.PREFIX}.bypass.$type")
-            )
+            // 4. Check if the target is immune (unless the arbiter can bypass immunity).
+            if (isTargetImmune(target.uniqueId, arbiter.uniqueId, type))
                 return PunishmentResponse.TARGET_IMMUNE
 
-            plugin.postgresHandler.insertPunishment(this)
-            return PunishmentResponse.OK
+            // 5. Process duration and insert punishment.
+            if (arbiter != plugin.punishmentManagerExplicit.consoleArbiter) {
+                val punisherPlayer = Bukkit.getPlayer(arbiter.uniqueId) ?: return PunishmentResponse.PERMISSION_DENIED
+                val permanentAllowed = punisherPlayer.hasPermission("${Constants.Permissions.PREFIX}.group.unlimited")
+                val maxDuration = when (type) {
+                    PunishmentType.BAN -> TimeUtil.getMaxBanDurationForPlayer(punisherPlayer, plugin)
+                    PunishmentType.MUTE -> TimeUtil.getMaxMuteDurationForPlayer(punisherPlayer, plugin)
+                    else -> Long.MAX_VALUE
+                }
+
+                if (expiry == null) {
+                    // Requested duration is permanent.
+                    if (permanentAllowed) {
+                        insertPunishment()
+                        return PunishmentResponse.OK
+                    } else {
+                        return if (plugin.config.getBoolean("groups.reduce_to_limit")) {
+                            this.expiry = System.currentTimeMillis() + maxDuration
+                            insertPunishment()
+                            PunishmentResponse.OK
+                        } else {
+                            PunishmentResponse.DURATION_EXCEEDS_PERMISSION
+                        }
+                    }
+                } else {
+                    val requestedDuration = System.currentTimeMillis() - expiry!!
+                    if (requestedDuration > maxDuration && !permanentAllowed) {
+                        return if (plugin.config.getBoolean("groups.reduce_to_limit")) {
+                            this.expiry = System.currentTimeMillis() + maxDuration
+                            insertPunishment()
+                            PunishmentResponse.OK
+                        } else {
+                            PunishmentResponse.DURATION_EXCEEDS_PERMISSION
+                        }
+                    } else {
+                        insertPunishment()
+                        return PunishmentResponse.OK
+                    }
+                }
+            } else {
+                // Console arbiter bypasses duration and permission checks.
+                insertPunishment()
+                return PunishmentResponse.OK
+            }
         } catch (e: Exception) {
             e.printStackTrace()
             return PunishmentResponse.SERVER_ERROR
         }
+    }
+
+    // Helper to check if the target already has active punishments of the given type.
+    private fun hasActivePunishment(targetId: UUID, type: PunishmentType): Boolean {
+        return plugin.postgresHandler.getActivePunishments(targetId, type).isNotEmpty()
+    }
+
+    // Helper to verify the punisher's permission.
+    private fun hasPunisherPermission(arbiterId: UUID, type: PunishmentType): Boolean {
+        val worldName = Bukkit.getWorlds()[0].name
+        val arbiterOfflinePlayer = Bukkit.getOfflinePlayer(arbiterId)
+        return plugin.permission.playerHas(worldName, arbiterOfflinePlayer, "${Constants.Permissions.COMMAND_PREFIX}.$type")
+    }
+
+    // Helper to check if the target is immune unless bypassed.
+    private fun isTargetImmune(targetId: UUID, arbiterId: UUID, type: PunishmentType): Boolean {
+        val worldName = Bukkit.getWorlds()[0].name
+        val targetOffline = Bukkit.getOfflinePlayer(targetId)
+        val arbiterOffline = Bukkit.getOfflinePlayer(arbiterId)
+        val immunePermission = "${Constants.Permissions.PREFIX}.immune.$type"
+        val bypassPermission = "${Constants.Permissions.PREFIX}.bypass.$type"
+
+        return plugin.permission.playerHas(worldName, targetOffline, immunePermission) && !plugin.permission.playerHas(worldName, arbiterOffline, bypassPermission)
+    }
+
+    // Helper to insert the punishment into the database.
+    private fun insertPunishment() {
+        plugin.postgresHandler.insertPunishment(this)
     }
 
     override fun getId(): Int {

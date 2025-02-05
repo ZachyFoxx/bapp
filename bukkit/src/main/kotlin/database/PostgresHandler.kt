@@ -423,6 +423,42 @@ class PostgresHandler() : WithPlugin {
         return punishments.toList()
     }
 
+    fun getUser(username: String): User? {
+        return transaction(dbConnection) {
+            val query = UserTable.selectAll()
+                .where { UserTable.username eq username }
+                .firstOrNull()
+
+                query?.let { row ->
+                    // Map the arbiter details (now using the alias for the arbiter)
+                    val user = BappUser(
+                        name = row[UserTable.username],
+                        uniqueId = row[UserTable.uniqueId]
+                    )
+                    // Return the punishment object
+                    return@transaction user
+                }
+        }
+    }
+
+    fun getUser(uniqueId: UUID): User? {
+        return transaction(dbConnection) {
+            val query = UserTable.selectAll()
+                .where { UserTable.uniqueId eq uniqueId }
+                .firstOrNull()
+
+                query?.let { row ->
+                    // Map the arbiter details (now using the alias for the arbiter)
+                    val user = BappUser(
+                        name = row[UserTable.username],
+                        uniqueId = row[UserTable.uniqueId]
+                    )
+                    // Return the punishment object
+                    return@transaction user
+                }
+        }
+    }
+
     fun getPunishments(sortBy: SortBy, page: Int, pageSize: Int): List<Punishment> {
         val punishments = mutableListOf<Punishment>()
         transaction(dbConnection) {

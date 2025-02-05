@@ -1,5 +1,9 @@
 package sh.foxboy.bapp.utils
 
+import org.bukkit.configuration.ConfigurationSection
+import org.bukkit.entity.Player
+import org.bukkit.plugin.java.JavaPlugin
+
 class TimeUtil {
     companion object {
         fun convertTimestampToString(timestamp: Long): String {
@@ -54,8 +58,8 @@ class TimeUtil {
             return totalSeconds
         }
 
-        fun parseDuration(durationString: String): Map<String, Int> {
-            val regex = Regex("^(?:(\\d+)y)?(?:(\\d+)m)?(?:(\\d+)w)?(?:(\\d+)d)?(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s)?$", RegexOption.IGNORE_CASE)
+        fun parseDuration(durationString: String): Map<String, Int>? {
+            val regex = Regex("^(?:(\\d+)y)?(?:(\\d+)mo)?(?:(\\d+)w)?(?:(\\d+)d)?(?:(\\d+)h)?(?:(\\d+)m)?(?:(\\d+)s)?$", RegexOption.IGNORE_CASE)
             val matchResult = regex.matchEntire(durationString.trim())
 
             if (matchResult != null) {
@@ -70,8 +74,64 @@ class TimeUtil {
                     "seconds" to (groups.getOrNull(7)?.toIntOrNull() ?: 0)
                 )
             } else {
-                throw IllegalArgumentException("Invalid duration format: $durationString")
+                return null
             }
+        }
+
+                // Function to get the configuration section for groups
+        fun getGroupsSection(plugin: JavaPlugin): ConfigurationSection? {
+            return plugin.config.getConfigurationSection("groups")
+        }
+
+        // Function that checks player's permissions and returns the max ban duration (in seconds)
+        fun getMaxBanDurationForPlayer(player: Player, plugin: JavaPlugin): Long {
+            // Default duration if none found (e.g., 0 seconds, meaning no limit)
+            var maxDurationSeconds: Long = 0
+            val groupsSection = getGroupsSection(plugin)
+            groupsSection?.getKeys(false)?.forEach { groupKey ->
+                val groupSection = groupsSection.getConfigurationSection(groupKey)
+                // Read the group's permission and max ban duration string
+                val permission = groupSection?.getString("permission") ?: return@forEach
+                // If player has the permission for this group, use its max_ban_duration
+                if (player.hasPermission(permission)) {
+                    val durationStr = groupSection.getString("max_ban_duration")
+                    if (durationStr != null) {
+                        try {
+                            val durationMap = parseDuration(durationStr)
+                            val durationSeconds = convertDurationToSeconds(durationMap!!)
+                            // Optionally, if multiple groups match, decide which one to use.
+                            // For example, you can take the maximum value or apply a priority.
+                            maxDurationSeconds = maxDurationSeconds.coerceAtLeast(durationSeconds)
+                        } catch (e: Exception) {
+                            player.sendMessage("Error parsing duration for group $groupKey: ${e.message}")
+                        }
+                    }
+                }
+            }
+            return maxDurationSeconds
+        }
+
+        // Similar function for max mute duration if needed:
+        fun getMaxMuteDurationForPlayer(player: Player, plugin: JavaPlugin): Long {
+            var maxDurationSeconds: Long = 0
+            val groupsSection = getGroupsSection(plugin)
+            groupsSection?.getKeys(false)?.forEach { groupKey ->
+                val groupSection = groupsSection.getConfigurationSection(groupKey)
+                val permission = groupSection?.getString("permission") ?: return@forEach
+                if (player.hasPermission(permission)) {
+                    val durationStr = groupSection.getString("max_mute_duration")
+                    if (durationStr != null) {
+                        try {
+                            val durationMap = parseDuration(durationStr)
+                            val durationSeconds = convertDurationToSeconds(durationMap!!)
+                            maxDurationSeconds = maxDurationSeconds.coerceAtLeast(durationSeconds)
+                        } catch (e: Exception) {
+                            player.sendMessage("Error parsing mute duration for group $groupKey: ${e.message}")
+                        }
+                    }
+                }
+            }
+            return maxDurationSeconds
         }
     }
 }
