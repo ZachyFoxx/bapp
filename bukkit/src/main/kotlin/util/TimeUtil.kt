@@ -1,4 +1,4 @@
-package sh.foxboy.bapp.utils
+package sh.foxboy.bapp.util
 
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.entity.Player
@@ -6,7 +6,12 @@ import org.bukkit.plugin.java.JavaPlugin
 
 class TimeUtil {
     companion object {
+
         fun convertTimestampToString(timestamp: Long): String {
+            return convertTimestampToString(timestamp, true)
+        }
+
+        fun convertTimestampToString(timestamp: Long, relative: Boolean): String {
             val now = System.currentTimeMillis()
             val diffMillis = timestamp - now
             val inFuture = diffMillis > 0
@@ -23,7 +28,9 @@ class TimeUtil {
             fun format(unit: String, value: Long): String {
                 // Add plural "s" if value is not 1.
                 val unitString = if (value == 1L) unit else "$unit" + "s"
+                if (relative)
                 return if (inFuture) "in $value $unitString" else "$value $unitString ago"
+                else return "$value $unitString"
             }
 
             return when {

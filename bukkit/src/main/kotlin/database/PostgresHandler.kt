@@ -13,9 +13,11 @@ import org.jetbrains.exposed.sql.Expression
 import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.SortOrder
+import org.jetbrains.exposed.sql.StdOutSqlLogger
 import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.andIfNotNull
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.or
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import sh.foxboy.bapp.Constants
@@ -160,6 +162,7 @@ class PostgresHandler() : WithPlugin {
     fun getActivePunishments(target: UUID, type: PunishmentType): List<Punishment> {
         val punishments = mutableListOf<Punishment>()
         transaction(dbConnection) {
+            addLogger(StdOutSqlLogger) // This will print SQL statements to the console
             val punishmentAlias = Alias(PunishmentsTable, "punishments")
             val userAlias = Alias(UserTable, "user")
             val punishmentDataAlias = Alias(PunishmentDataTable, "punishment_data")
@@ -168,14 +171,15 @@ class PostgresHandler() : WithPlugin {
 
             val query = punishmentAlias
                 .join(userAlias, JoinType.INNER, onColumn = punishmentAlias[PunishmentsTable.userId], otherColumn = userAlias[UserTable.uniqueId]) // Join with targetUser
-                .join(punishmentDataAlias, JoinType.INNER, onColumn = punishmentAlias[PunishmentsTable.id], otherColumn = punishmentDataAlias[PunishmentDataTable.punishmentTypeId]) // Join with punishmentData
+                .join(punishmentDataAlias, JoinType.INNER, onColumn = punishmentAlias[PunishmentsTable.id], otherColumn = punishmentDataAlias[PunishmentDataTable.punishId]) // Join with punishmentData
                 .join(punishmentTypeAlias, JoinType.INNER, onColumn = punishmentAlias[PunishmentsTable.punishmentTypeId], otherColumn = punishmentTypeAlias[PunishmentTypeTable.id]) // Join with punishmentType
                 .join(issuedByUserAlias, JoinType.INNER, onColumn = punishmentDataAlias[PunishmentDataTable.issuedBy], otherColumn = issuedByUserAlias[UserTable.uniqueId]) // Join with issuedByUser (fixed join condition)
                 .selectAll()
                 .where {
                     (punishmentAlias[PunishmentsTable.userId] eq target)
+                        .andIfNotNull { punishmentDataAlias[PunishmentDataTable.active] eq true }
                         .andIfNotNull { punishmentAlias[PunishmentsTable.punishmentTypeId] eq type.ordinal }
-                        .andIfNotNull { punishmentDataAlias[PunishmentDataTable.endTime] greater System.currentTimeMillis() }
+                        .andIfNotNull { punishmentDataAlias[PunishmentDataTable.endTime] greater System.currentTimeMillis() or punishmentDataAlias[PunishmentDataTable.endTime].isNull() }
                 }
 
                 val iterator = query.iterator()
@@ -207,10 +211,10 @@ class PostgresHandler() : WithPlugin {
                             type = punishmentType,
                             arbiter = arbiter,
                             target = target2,
-                            reason = row[PunishmentsTable.reason], // Access reason by name
-                            expiry = row[PunishmentDataTable.endTime], // Access expiry by name
+                            reason = row[punishmentDataAlias[PunishmentDataTable.reason]], // Access reason by name
+                            expiry = row[punishmentDataAlias[PunishmentDataTable.endTime]], // Access expiry by name
                             appealed = appealStatus == AppealStatus.APPROVED,
-                            id = row[PunishmentsTable.id], // Access id by name
+                            id = row[punishmentAlias[PunishmentsTable.id]], // Access id by name
                             flags = flags?.let { BehaviorFlag.decodeFlags(it) }
                         )
                     )
@@ -286,28 +290,58 @@ class PostgresHandler() : WithPlugin {
         }
     }
 
+    fun checkInsertUsers(punishment: Punishment) {
+        transaction(dbConnection) {
+            val existingUser = UserTable
+            .selectAll()
+            .where { UserTable.uniqueId eq punishment.target!!.uniqueId }
+            .firstOrNull()
+
+            // If user does not exist, insert them
+            if (existingUser == null) {
+                UserTable.insert {
+                    it[uniqueId] = punishment.target!!.uniqueId
+                    it[username] = punishment.target!!.name
+                }
+            }
+
+            val existingArbiter = UserTable
+            .selectAll()
+            .where { UserTable.uniqueId eq punishment.arbiter.uniqueId }
+            .firstOrNull()
+
+            // If user does not exist, insert them
+            if (existingArbiter == null) {
+                UserTable.insert {
+                    it[uniqueId] = punishment.arbiter.uniqueId
+                    it[username] = punishment.arbiter.name
+                }
+            }
+        }
+    }
+
     fun insertPunishment(punishment: Punishment): Punishment {
         transaction(dbConnection) {
-            val punishmentAlias = Alias(PunishmentsTable, "punishments")
-            val punishmentDataAlias = Alias(PunishmentDataTable, "punishment_data")
+            addLogger(StdOutSqlLogger) // This will print SQL statements to the console
+            // Check if user exists in bapp_users
+            checkInsertUsers(punishment)
 
-            val punishmentId = punishmentAlias.insert {
-                it[punishmentAlias[PunishmentsTable.userId]] = punishment.target!!.uniqueId
-                it[punishmentAlias[PunishmentsTable.punishmentTypeId]] = punishment.type.ordinal
-                it[punishmentAlias[PunishmentsTable.reason]] = punishment.reason
-            }.resultedValues!!.first().get(PunishmentsTable.id)
+            val punishmentId = PunishmentsTable.insert {
+                it[userId] = punishment.target!!.uniqueId
+                it[punishmentTypeId] = punishment.type.ordinal
+                it[reason] = punishment.reason
+            }.resultedValues!!.first()[PunishmentsTable.id]
 
-            val flags: List<BehaviorFlag>? = punishment.flags
-
-            punishmentDataAlias.insert {
-                it[punishmentDataAlias[PunishmentDataTable.userId]] = punishment.target!!.uniqueId
-                it[punishmentDataAlias[PunishmentDataTable.punishId]] = punishmentId
-                it[punishmentDataAlias[PunishmentDataTable.punishmentTypeId]] = punishment.type.ordinal
-                it[punishmentDataAlias[PunishmentDataTable.issuedBy]] = punishment.arbiter.uniqueId
-                it[punishmentDataAlias[PunishmentDataTable.startTime]] = System.currentTimeMillis()
-                it[punishmentDataAlias[PunishmentDataTable.endTime]] = punishment.expiry
-                it[punishmentDataAlias[PunishmentDataTable.active]] = true
-                it[punishmentDataAlias[PunishmentDataTable.flags]] = flags?.let { BehaviorFlag.encodeFlags(it) }
+            PunishmentDataTable.insert {
+                it[userId] = punishment.target!!.uniqueId
+                it[punishId] = punishmentId
+                it[reason] = punishment.reason
+                it[punishmentTypeId] = punishment.type.ordinal
+                it[issuedBy] = punishment.arbiter.uniqueId
+                it[startTime] = System.currentTimeMillis()
+                it[endTime] = punishment.expiry
+                it[active] = true
+                it[flags] = punishment.flags?.let { BehaviorFlag.encodeFlags(it) }
             }
         }
         return punishment

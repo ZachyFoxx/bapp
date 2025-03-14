@@ -1,2 +1,13 @@
+general:
+  error: "&cThere was an error processing your request. Contact administrator for details."
+  no_permission: "&cYou do not have permission to perform this command"
+  punishment_errors:
+    target_immune: "&cYou may not punish &7{target}&c!"
+    target_not_exist: "&cTarget &7{target}&c does not exist!"
+    time_exceeds_permission: "&cYou may not punish a player for &7{duration}&c!"
+
+
 ban:
-  announcement: "&c{player} &dhas banned &x&b&d&e&a&a&0{target} &dfor {reason} {$silent((&7[silent]):silent: false)}"
+  announcement: "&7{arbiter} &chas banned &7{target} &cfor &7{reason}&c{$silent(! &7[silent]:!)}"
+  already_banned: "&7{target} &cis already banned!"
+  kick_message: "&cYou are {$temporary(temporarily:permanently)} banned from this server {$temporary(for &f{duration}&c!:&c!)}&f\n\n&fBanned: {start_date_relative}\n&fBanned by: {arbiter} \n&fReason: {reason}{$temporary(\n&fExpires\\: {duration_relative}:)}"

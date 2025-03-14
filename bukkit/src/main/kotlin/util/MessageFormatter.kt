@@ -57,7 +57,7 @@ class MessageFormatter(private val plugin: JavaPlugin) {
 
     // Parse the message and handle conditional scripting like {$silent(true_value : false_value)}
     private fun applyConditionals(message: String, conditions: Map<String, Any>): String {
-        val conditionalRegex = Regex("""\{\$(\w+)\(((?:(?:\\.)|[^:])*)(?<!\\):(.*)\)\}""")
+        val conditionalRegex = Regex("""\{\$(\w+)\(((?:(?:\\.)|[^:])*)(?<!\\):([\s\S]*?)\)\}""")
 
         return conditionalRegex.replace(message) { matchResult ->
             val isEscaped = matchResult.value.startsWith("\\{")
@@ -73,7 +73,7 @@ class MessageFormatter(private val plugin: JavaPlugin) {
             val conditionMet = conditions[condition] as? Boolean ?: false
 
             // Return the true value if the condition is met, otherwise return the false value
-            if (conditionMet) trueValue else falseValue
+            if (conditionMet) trueValue.replace("\\", "") else falseValue.replace("\\", "")
         }
     }
 
@@ -88,9 +88,9 @@ class MessageFormatter(private val plugin: JavaPlugin) {
 
     // Apply color codes to the message (handles both &c and &#RRGGBB format)
     private fun applyColorCodes(message: String): String {
-        var formattedMessage = escapeSpecialCharacters(message) // Escape special characters first
+        // var formattedMessage = escapeSpecialCharacters(message) // Escape special characters first
 
         // Handle standard color codes (&c, &d, etc.)
-        return ChatColor.translateAlternateColorCodes('&', formattedMessage)
+        return ChatColor.translateAlternateColorCodes('&', message)
     }
 }

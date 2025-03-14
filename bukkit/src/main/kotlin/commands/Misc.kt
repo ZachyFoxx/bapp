@@ -32,20 +32,19 @@ internal enum class PunishmentFlag {
 internal fun detectFlags(input: String): List<String> {
     // Only look for valid flags -S, -G, -P, -L or combinations with case-insensitivity
     val validFlags = setOf("S", "G", "P", "L")
-    val regex = Regex("-(?i)([SGPL]+)") // Match -S, -G, -P, -L or combinations (case-insensitive)
+    val regex = Regex("-(?:[SGPL]+)", RegexOption.IGNORE_CASE)
     val flags = regex.findAll(input)
-        .map { it.groupValues[1] } // Get the flag combinations
+        .map { it.groupValues[0] } // Get the flag combinations
         .flatMap { it.toList().map { flag -> "-$flag" } } // Convert combinations into individual flags
-
     // Ensure the flags are only valid ones
     return flags.filter { it.substring(1).uppercase() in validFlags }.toList()
 }
 
-internal fun parseFlags(flagArg: String?): Set<PunishmentFlag> {
+internal fun parseFlags(flagArg: List<String>): Set<PunishmentFlag> {
     val flags = mutableSetOf<PunishmentFlag>()
 
     // If flagArg is not null and not empty, process each flag
-    flagArg?.let {
+    flagArg.forEach {
         it.uppercase().forEach { char ->
             PunishmentFlag.fromFlag(char.toString())?.let { flag ->
                 flags.add(flag) // Add the corresponding PunishmentFlag to the set

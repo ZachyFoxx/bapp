@@ -11,7 +11,10 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent
 import sh.foxboy.bapp.WithPlugin
+import sh.foxboy.bapp.api.flag.BehaviorFlag
+import sh.foxboy.bapp.api.punishment.PunishmentType
 import sh.foxboy.bapp.entity.BappUser
+import sh.foxboy.bapp.util.TimeUtil
 
 class PlayerConnectionListener : Listener, WithPlugin {
 
@@ -23,6 +26,36 @@ class PlayerConnectionListener : Listener, WithPlugin {
             .build()
             event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, reason)
             return
+        }
+
+        val punishments = plugin.postgresHandler.getActivePunishments(event.uniqueId, PunishmentType.BAN)
+
+        if (punishments.size > 0) {
+            val first = punishments.first()
+            val arbiter = first.arbiter
+            val target = first.target
+
+            val placeholders = mutableMapOf<String, String>().apply {
+                put("arbiter", arbiter.name)
+                put("target", target?.name ?: "NO_NAME")
+                put("reason", first.reason)
+                put("serverScope", "all")
+                put("punishmentType", first.type.toString())
+                put("banDate", TimeUtil.convertTimestampToString(System.currentTimeMillis()))
+                put("punishId", first.id.toString())
+
+                // TEST TEST TEST TEST
+                put("start_date_readable", TimeUtil.convertTimestampToString(System.currentTimeMillis()))
+                put("duration_readable", TimeUtil.convertTimestampToString(System.currentTimeMillis() + (86400 * 1000L)))
+            }
+
+            val flags = first.flags
+
+            // Define conditions dynamically
+            val conditions = mapOf(
+                "silent" to flags?.contains(BehaviorFlag.SILENT),
+                "temporary" to (first.expiry != null)
+            )
         }
 
         if (event.loginResult == AsyncPlayerPreLoginEvent.Result.ALLOWED)

@@ -57,4 +57,45 @@ object UserUtil : WithPlugin {
             return null
         }
     }
+
+    fun getFromAnySource(uniqueId: UUID): User? {
+        val bukkitPlayer = Bukkit.getOfflinePlayer(uniqueId)
+        if (bukkitPlayer.name != null) return BappUser(bukkitPlayer.name!!, bukkitPlayer.uniqueId)
+
+        // check our local cache first
+        var cacheUser: User? = null
+        for (u in plugin.userCache.all) {
+            if (u.uniqueId.equals(uniqueId)) {
+                cacheUser = u
+            }
+        }
+        if (cacheUser != null) return cacheUser
+
+        // Lets try our database now...
+        val dbUser = plugin.postgresHandler.getUser(uniqueId)
+
+        if (dbUser != null) return dbUser
+
+        // Now lets try the mojang API
+        try {
+            val url = URL("https://api.ashcon.app/mojang/v2/user/" + uniqueId.toString())
+            val jsonResponse = JsonParser().parse(InputStreamReader(url.openStream()))
+
+            val uuid = jsonResponse.getAsJsonObject().get("uuid").toString().replace("\"", "")
+            val uName = jsonResponse.getAsJsonObject().get("username").toString().replace("\"", "")
+
+            if (uuid.equals(""))
+                return null
+
+            val webUser = BappUser(uName, UUID.fromString(uuid))
+            plugin.userCache.put(webUser)
+            // debug.print(String.format("Pulled entry for %s from API", user.getName()));
+            // LolBans.getPlugin().getUserCache().put(user);
+            // debug.print("Cached user " + user.getName());
+            return webUser
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return null
+        }
+    }
 }

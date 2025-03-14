@@ -171,3 +171,4 @@ Flags are case-insensitive:
 
 ## Viewing Announcements
 - **`punishplugin.bypass.viewannouncements`**: Allows the user to view announcements even if they are currently disabled or hidden.
+- **`punishmentplugin.announcements.silent`**: Allows the user to view announcements if they are silent

@@ -13,7 +13,7 @@ object PunishmentDataTable : Table(Bapp.plugin.config.getString(Constants.Settin
     val punishId = integer("punish_id").references(PunishmentsTable.id)
     val userId = uuid("user_id").references(UserTable.uniqueId) // The user receiving the punishment
     val punishmentTypeId = integer("punishment_type_id").references(PunishmentTypeTable.id) // Type of punishment
-    val serverId = uuid("server_id").references(ServersTable.id) // The server where the punishment occurred
+    val serverId = uuid("server_id").references(ServersTable.id).nullable() // The server where the punishment occurred
     val reason = text("reason") // Reason for the punishment
     val issuedBy = uuid("issued_by").references(UserTable.uniqueId) // Moderator issuing the punishment
     val startTime = long("start_time") // When the punishment starts

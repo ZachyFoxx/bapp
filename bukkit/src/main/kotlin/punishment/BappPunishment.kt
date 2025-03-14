@@ -16,7 +16,7 @@ import sh.foxboy.bapp.api.flag.BehaviorFlag
 import sh.foxboy.bapp.api.punishment.Punishment
 import sh.foxboy.bapp.api.punishment.PunishmentResponse
 import sh.foxboy.bapp.api.punishment.PunishmentType
-import sh.foxboy.bapp.utils.TimeUtil
+import sh.foxboy.bapp.util.TimeUtil
 
 class BappPunishment(private val type: PunishmentType, private val arbiter: Arbiter, private val target: User?, private var reason: String?, private var expiry: Long?, private var appealed: Boolean = false, private var flags: List<BehaviorFlag>?, private var id: Int = Bapp.plugin.postgresHandler.getLastId() + 1) : Punishment,
     WithPlugin {
@@ -103,6 +103,22 @@ class BappPunishment(private val type: PunishmentType, private val arbiter: Arbi
         }
     }
 
+    fun announce(silent: Boolean, message: String) {
+        // always send a message to sender regardless of permission to view silents
+        Bukkit.getPlayer(arbiter.uniqueId)?.sendMessage(message)
+        plugin.logger.info(message)
+
+        if (config.getBoolean("global_broadcasts")) {
+            // send over plugin message channel, with message and boolean
+        }
+
+        for (player in Bukkit.getOnlinePlayers()) {
+            if (silent && !player.hasPermission("${Constants.Permissions.PREFIX}.announcements.silent")) continue
+            if (player.uniqueId == arbiter.uniqueId) continue; // we've already sent the issuing user a message.
+            player.sendMessage(message)
+        }
+    }
+
     // Helper to check if the target already has active punishments of the given type.
     private fun hasActivePunishment(targetId: UUID, type: PunishmentType): Boolean {
         return plugin.postgresHandler.getActivePunishments(targetId, type).isNotEmpty()
@@ -110,6 +126,8 @@ class BappPunishment(private val type: PunishmentType, private val arbiter: Arbi
 
     // Helper to verify the punisher's permission.
     private fun hasPunisherPermission(arbiterId: UUID, type: PunishmentType): Boolean {
+        if (arbiterId == plugin.punishmentManagerExplicit.consoleArbiter.uniqueId)
+            return true
         val worldName = Bukkit.getWorlds()[0].name
         val arbiterOfflinePlayer = Bukkit.getOfflinePlayer(arbiterId)
         return plugin.permission.playerHas(worldName, arbiterOfflinePlayer, "${Constants.Permissions.COMMAND_PREFIX}.$type")
@@ -117,13 +135,21 @@ class BappPunishment(private val type: PunishmentType, private val arbiter: Arbi
 
     // Helper to check if the target is immune unless bypassed.
     private fun isTargetImmune(targetId: UUID, arbiterId: UUID, type: PunishmentType): Boolean {
-        val worldName = Bukkit.getWorlds()[0].name
-        val targetOffline = Bukkit.getOfflinePlayer(targetId)
-        val arbiterOffline = Bukkit.getOfflinePlayer(arbiterId)
-        val immunePermission = "${Constants.Permissions.PREFIX}.immune.$type"
-        val bypassPermission = "${Constants.Permissions.PREFIX}.bypass.$type"
-
-        return plugin.permission.playerHas(worldName, targetOffline, immunePermission) && !plugin.permission.playerHas(worldName, arbiterOffline, bypassPermission)
+        if (arbiterId == plugin.punishmentManagerExplicit.consoleArbiter.uniqueId)
+            return false
+        try {
+            val worldName = Bukkit.getWorlds()[0].name
+            val targetOffline = Bukkit.getOfflinePlayer(targetId)
+            val arbiterOffline = Bukkit.getOfflinePlayer(arbiterId)
+            val immunePermission = "${Constants.Permissions.PREFIX}.immune.$type"
+            val bypassPermission = "${Constants.Permissions.PREFIX}.bypass.$type"
+            println(worldName)
+            val test1 = plugin.permission.playerHas(worldName, targetOffline, immunePermission)
+            val test2 = !plugin.permission.playerHas(worldName, arbiterOffline, bypassPermission)
+            return test1 && test2
+        } catch (e: Exception) {
+            return false
+        }
     }
 
     // Helper to insert the punishment into the database.
