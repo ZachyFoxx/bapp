@@ -34,6 +34,9 @@ public interface Punishment extends Cacheable {
     @Nullable
     Long getExpiry();
 
+    @NotNull
+    Long getDate();
+
     @Nullable
     List<BehaviorFlag> getFlags();
 

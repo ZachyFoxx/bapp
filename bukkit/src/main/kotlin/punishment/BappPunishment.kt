@@ -18,7 +18,7 @@ import sh.foxboy.bapp.api.punishment.PunishmentResponse
 import sh.foxboy.bapp.api.punishment.PunishmentType
 import sh.foxboy.bapp.util.TimeUtil
 
-class BappPunishment(private val type: PunishmentType, private val arbiter: Arbiter, private val target: User?, private var reason: String?, private var expiry: Long?, private var appealed: Boolean = false, private var flags: List<BehaviorFlag>?, private var id: Int = Bapp.plugin.postgresHandler.getLastId() + 1) : Punishment,
+class BappPunishment(private val type: PunishmentType, private val arbiter: Arbiter, private val target: User?, private var reason: String?, private var expiry: Long?, private var appealed: Boolean = false, private var flags: List<BehaviorFlag>?, private var id: Int = Bapp.plugin.postgresHandler.getLastId() + 1, private var date: Long = System.currentTimeMillis()) : Punishment,
     WithPlugin {
 
     private var tmpreason = reason ?: "You have been punished!"
@@ -187,5 +187,9 @@ class BappPunishment(private val type: PunishmentType, private val arbiter: Arbi
 
     override fun getFlags(): List<BehaviorFlag>? {
         return this.flags
+    }
+
+    override fun getDate(): Long {
+        return this.date
     }
 }

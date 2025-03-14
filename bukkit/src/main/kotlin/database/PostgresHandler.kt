@@ -153,7 +153,8 @@ class PostgresHandler() : WithPlugin {
                     expiry = row[punishmentDataAlias[PunishmentDataTable.endTime]], // Access expiry by name
                     appealed = appealStatus == AppealStatus.APPROVED,
                     id = row[punishmentAlias[PunishmentsTable.id]], // Access id by name
-                    flags = flags?.let { BehaviorFlag.decodeFlags(it) }
+                    flags = flags?.let { BehaviorFlag.decodeFlags(it) },
+                    date = row[punishmentAlias[PunishmentsTable.createdAt]]
                 )
             }
         }
@@ -215,7 +216,8 @@ class PostgresHandler() : WithPlugin {
                             expiry = row[punishmentDataAlias[PunishmentDataTable.endTime]], // Access expiry by name
                             appealed = appealStatus == AppealStatus.APPROVED,
                             id = row[punishmentAlias[PunishmentsTable.id]], // Access id by name
-                            flags = flags?.let { BehaviorFlag.decodeFlags(it) }
+                            flags = flags?.let { BehaviorFlag.decodeFlags(it) },
+                            date = row[punishmentAlias[PunishmentsTable.createdAt]]
                         )
                     )
             }
@@ -284,7 +286,8 @@ class PostgresHandler() : WithPlugin {
                     expiry = row[punishmentDataAlias[PunishmentDataTable.endTime]], // Access expiry by name
                     appealed = appealStatus == AppealStatus.APPROVED,
                     id = row[punishmentAlias[PunishmentsTable.id]], // Access id by name
-                    flags = flags?.let { BehaviorFlag.decodeFlags(it) }
+                    flags = flags?.let { BehaviorFlag.decodeFlags(it) },
+                    date = row[punishmentAlias[PunishmentsTable.createdAt]]
                 )
             }
         }
@@ -398,7 +401,8 @@ class PostgresHandler() : WithPlugin {
                         expiry = row[punishmentDataAlias[PunishmentDataTable.endTime]], // Access expiry by name
                         appealed = appealStatus == AppealStatus.APPROVED,
                         id = row[punishmentAlias[PunishmentsTable.id]], // Access id by name
-                        flags = flags?.let { BehaviorFlag.decodeFlags(it) }
+                        flags = flags?.let { BehaviorFlag.decodeFlags(it) },
+                        date = row[punishmentAlias[PunishmentsTable.createdAt]]
                     )
                 }
             }
@@ -450,7 +454,8 @@ class PostgresHandler() : WithPlugin {
                     expiry = row[PunishmentDataTable.endTime], // Access expiry by name
                     appealed = appealStatus == AppealStatus.APPROVED,
                     id = row[PunishmentsTable.id], // Access id by name
-                    flags = flags?.let { BehaviorFlag.decodeFlags(it) }
+                    flags = flags?.let { BehaviorFlag.decodeFlags(it) },
+                    date = row[PunishmentsTable.createdAt]
                 )
             }
         }
@@ -536,7 +541,8 @@ class PostgresHandler() : WithPlugin {
                     expiry = row[PunishmentDataTable.endTime], // Access expiry by name
                     appealed = appealStatus == AppealStatus.APPROVED,
                     id = row[PunishmentsTable.id], // Access id by name
-                    flags = flags?.let { BehaviorFlag.decodeFlags(it) }
+                    flags = flags?.let { BehaviorFlag.decodeFlags(it) },
+                    date = row[PunishmentsTable.createdAt]
                 )
             }
         }

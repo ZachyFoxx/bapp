@@ -19,6 +19,7 @@ import sh.foxboy.bapp.api.punishment.Punishment
 import sh.foxboy.bapp.cache.BappCache
 import sh.foxboy.bapp.commands.punishment.banCommand
 import sh.foxboy.bapp.database.PostgresHandler
+import sh.foxboy.bapp.listeners.PlayerConnectionListener
 import sh.foxboy.bapp.punishment.BappPunishmentManager
 import sh.foxboy.bapp.util.StartupUtil
 import sh.foxboy.bapp.util.StartupUtil.registerCommands
@@ -82,6 +83,10 @@ class Bapp : JavaPlugin(), BappAPI {
 
         CommandAPI.unregister("ban")
         banCommand.register()
+
+        // events
+        server.pluginManager.registerEvents(PlayerConnectionListener(), this)
+
         logger.info("$name ${description.version} enabled successfully!")
     }
 

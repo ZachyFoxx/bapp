@@ -10,4 +10,4 @@ general:
 ban:
   announcement: "&7{arbiter} &chas banned &7{target} &cfor &7{reason}&c{$silent(! &7[silent]:!)}"
   already_banned: "&7{target} &cis already banned!"
-  kick_message: "&cYou are {$temporary(temporarily:permanently)} banned from this server {$temporary(for &f{duration}&c!:&c!)}&f\n\n&fBanned: {start_date_relative}\n&fBanned by: {arbiter} \n&fReason: {reason}{$temporary(\n&fExpires\\: {duration_relative}:)}"
+  kick_message: "&cYou are {$temporary(temporarily:permanently)} banned from this server{$temporary( for &f{duration}&c!:&c!)}&f\n\n&fBanned: {start_date_relative}\n&fBanned by: {arbiter} \n&fReason: {reason}{$temporary(\n&fExpires\\: {duration_relative}:)}"

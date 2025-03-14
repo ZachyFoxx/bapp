@@ -29,7 +29,6 @@ class PlayerConnectionListener : Listener, WithPlugin {
         }
 
         val punishments = plugin.postgresHandler.getActivePunishments(event.uniqueId, PunishmentType.BAN)
-
         if (punishments.size > 0) {
             val first = punishments.first()
             val arbiter = first.arbiter
@@ -45,17 +44,27 @@ class PlayerConnectionListener : Listener, WithPlugin {
                 put("punishId", first.id.toString())
 
                 // TEST TEST TEST TEST
-                put("start_date_readable", TimeUtil.convertTimestampToString(System.currentTimeMillis()))
-                put("duration_readable", TimeUtil.convertTimestampToString(System.currentTimeMillis() + (86400 * 1000L)))
+                put("duration_relative", TimeUtil.convertTimestampToString(System.currentTimeMillis() + (86400 * 1000L)))
+                put("duration", TimeUtil.convertTimestampToString(System.currentTimeMillis() + (86400 * 1000L), false))
+                put("start_date_relative", TimeUtil.convertTimestampToString(first.date))
+                put("start_date", TimeUtil.convertTimestampToString(first.date))
             }
 
             val flags = first.flags
 
             // Define conditions dynamically
             val conditions = mapOf(
-                "silent" to flags?.contains(BehaviorFlag.SILENT),
+                "silent" to (flags?.contains(BehaviorFlag.SILENT) ?: false),
                 "temporary" to (first.expiry != null)
             )
+
+            val kickMessage = messageFormatter.getMessage("ban.kick_message", placeholders, conditions)
+
+            val reason = Component.text()
+            .content(kickMessage)
+            .build()
+
+            event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, reason)
         }
 
         if (event.loginResult == AsyncPlayerPreLoginEvent.Result.ALLOWED)
